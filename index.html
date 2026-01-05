@@ -3,48 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jeeshu AI</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Jeeshu AI Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        body { margin: 0; font-family: sans-serif; background: #000; color: white; display: flex; flex-direction: column; height: 100vh; }
-        .chat-area { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-        .user { align-self: flex-end; background: #007bff; padding: 12px; border-radius: 15px; max-width: 80%; }
-        .ai { align-self: flex-start; background: #222; padding: 12px; border-radius: 15px; border: 1px solid #444; max-width: 85%; }
-        .input-box { padding: 15px; background: #111; display: flex; gap: 10px; border-top: 1px solid #333; }
-        textarea { flex: 1; background: #333; color: white; border: none; padding: 12px; border-radius: 20px; height: 40px; outline: none; }
-        .send-btn { color: #007bff; font-size: 25px; cursor: pointer; align-self: center; }
+        /* CSS: DESIGN AND ANIMATIONS */
+        :root { --primary: #000; --bg: #ffffff; --card-bg: #f9f9f9; }
+        body, html { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; height: 100vh; overflow: hidden; background: var(--bg); }
+
+        /* Login Page Overlay */
+        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; align-items: center; justify-content: center; text-align: center; }
+        .login-box { width: 85%; max-width: 350px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+        .login-btn-main { width: 100%; padding: 12px; background: #000; color: #fff; border: none; border-radius: 25px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+
+        /* Main App Structure */
+        #app { display: none; flex-direction: column; height: 100%; }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; }
+        .sidebar { position: fixed; left: -280px; top: 0; width: 260px; height: 100%; background: #fff; z-index: 1000; transition: 0.3s; padding: 20px; box-shadow: 2px 0 15px rgba(0,0,0,0.1); }
+        .sidebar.active { left: 0; }
+
+        /* Feature Cards */
+        .content { flex: 1; overflow-y: auto; padding: 20px; text-align: center; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+        .card { border: 1px solid #eee; padding: 15px; border-radius: 15px; font-size: 13px; cursor: pointer; transition: 0.2s; background: var(--card-bg); }
+
+        /* Profile Dropdown */
+        .profile-box { position: absolute; top: 55px; right: 15px; width: 200px; background: #fff; border-radius: 15px; box-shadow: 0 5px 25px rgba(0,0,0,0.15); display: none; padding: 15px; z-index: 2000; border: 1px solid #eee; }
+        .profile-box.active { display: block; }
+
+        /* Chat Input Area */
+        .footer { padding: 15px; }
+        .input-container { background: #f0f0f0; border-radius: 30px; padding: 10px 15px; display: flex; align-items: center; gap: 10px; }
+        textarea { flex: 1; background: transparent; border: none; outline: none; resize: none; font-size: 16px; }
     </style>
 </head>
 <body>
-    <div class="chat-area" id="chat">
-        <h2 style="text-align: center; color: #666;">Jeeshu AI Active</h2>
+
+    <div id="loginOverlay">
+        <div class="login-box">
+            <div style="width:70px; height:70px; background:#000; color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 15px; font-size:30px;"><i class="fas fa-robot"></i></div>
+            <h2>Jeeshu AI</h2>
+            <p style="color:#888; font-size:14px;">Log in to start your journey</p>
+            <input type="text" id="userName" placeholder="Enter Username" style="width:100%; padding:10px; margin-top:10px; border:1px solid #ddd; border-radius:20px; outline:none; text-align:center;">
+            <button class="login-btn-main" onclick="startApp()">Get Started</button>
+        </div>
     </div>
-    <div class="input-box">
-        <textarea id="userInput" placeholder="Ask Jeeshu..."></textarea>
-        <i class="fas fa-paper-plane send-btn" onclick="askAI()"></i>
+
+    <div id="app">
+        <nav class="sidebar" id="sidebar">
+            <h3 style="margin-top:0;">Menu</h3>
+            <div class="card" style="background:#000; color:#fff; margin-bottom:10px;">+ New Chat</div>
+            <div style="padding:10px;"><i class="fas fa-qrcode"></i> Scanner</div>
+            <div style="padding:10px;"><i class="fas fa-history"></i> History</div>
+            <div style="padding:10px; color:gold;"><i class="fas fa-crown"></i> Go Pro</div>
+        </nav>
+
+        <header class="header">
+            <i class="fas fa-bars" onclick="toggleSidebar()" style="cursor:pointer; font-size:20px;"></i>
+            <span style="font-weight:bold;">Jeeshu Ai <i class="fas fa-chevron-down" style="font-size:10px;"></i></span>
+            <div id="userIcon" onclick="toggleProfile()" style="width:35px; height:35px; background:#000; color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;"><i class="fas fa-user"></i></div>
+            
+            <div class="profile-box" id="profileBox">
+                <b id="helloUser">User</b>
+                <hr style="border:0; border-top:1px solid #eee; margin:10px 0;">
+                <div style="font-size:13px; cursor:pointer;"><i class="fas fa-gem"></i> My Plan</div>
+                <div style="font-size:13px; cursor:pointer; margin-top:8px; color:red;" onclick="location.reload()"><i class="fas fa-sign-out-alt"></i> Logout</div>
+            </div>
+        </header>
+
+        <main class="content" id="chatWindow">
+            <h1 style="color:#ccc; font-weight:300; margin-top:50px;">Welcome To Jeeshu Ai</h1>
+            <div class="grid">
+                <div class="card">✨ Image Generate</div>
+                <div class="card">🖼️ Image Enhance</div>
+                <div class="card">📍 Location</div>
+                <div class="card">🧠 Code Debug</div>
+            </div>
+        </main>
+
+        <footer class="footer">
+            <div class="input-container">
+                <i class="fas fa-plus" style="color:#aaa;"></i>
+                <textarea id="msgIn" placeholder="Messages Jeeshu AI..." rows="1"></textarea>
+                <button onclick="sendMsg()" style="background:#ddd; border:none; border-radius:50%; width:35px; height:35px; cursor:pointer;"><i class="fas fa-arrow-up"></i></button>
+            </div>
+        </footer>
     </div>
 
     <script>
-        const KEY = "AIzaSyD6CyqWFrW1aCGDxeoVWJ4ZFfe5c69aHNg";
-        async function askAI() {
-            const input = document.getElementById("userInput");
-            const msg = input.value.trim();
-            if (!msg) return;
+        const API_KEY = "AIzaSyD6CyqWFrW1aCGDxeoVWJ4ZFfe5c69aHNg";
 
-            const chat = document.getElementById("chat");
-            chat.innerHTML += `<div class="user">${msg}</div>`;
-            input.value = "";
+        function startApp() {
+            let name = document.getElementById('userName').value;
+            if(!name) name = "Guru";
+            document.getElementById('helloUser').innerText = name;
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('app').style.display = 'flex';
+        }
+
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('active'); }
+        function toggleProfile() { document.getElementById('profileBox').classList.toggle('active'); }
+
+        async function sendMsg() {
+            const input = document.getElementById('msgIn');
+            const msg = input.value.trim();
+            if(!msg) return;
+
+            const chat = document.getElementById('chatWindow');
+            if(chat.querySelector('h1')) chat.innerHTML = ''; // Welcome hatane ke liye
+
+            chat.innerHTML += `<div style="align-self:flex-end; background:#007bff; color:#fff; padding:10px 15px; border-radius:15px; margin:5px; max-width:80%; margin-left:auto;">${msg}</div>`;
+            input.value = '';
 
             try {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${KEY}`, {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ contents: [{ parts: [{ text: msg }] }] })
                 });
                 const data = await res.json();
                 const reply = data.candidates[0].content.parts[0].text;
-                chat.innerHTML += `<div class="ai">${reply}</div>`;
-            } catch (e) { chat.innerHTML += `<div class="ai">Error Connecting!</div>`; }
+                chat.innerHTML += `<div style="align-self:flex-start; background:#f1f1f1; color:#000; padding:15px; border-radius:15px; margin:5px; max-width:85%; border:1px solid #eee; text-align:left;">${reply}</div>`;
+            } catch (e) { console.log(e); }
             chat.scrollTop = chat.scrollHeight;
         }
     </script>
