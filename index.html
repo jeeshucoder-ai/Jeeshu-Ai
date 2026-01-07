@@ -350,60 +350,84 @@ textarea { width: 100%; border: none; background: transparent; outline: none; fo
     </div>
 </body>
 <script>
-// Plus button को select करें
-const plusBtn = document.getElementById('plusBtn');
-const plusMenu = document.getElementById('plusMenu');
-
-// Plus button पर क्लिक से menu टॉगल करें
-plusBtn.addEventListener('click', function() {
-    plusMenu.classList.toggle('active');
-});
-
-// हर menu item में हटाने का बटन एड करें और हटाने का फंक्शन
-const menuItems = document.querySelectorAll('.menu-item');
-menuItems.forEach(item => {
-    // Cross icon बटन बनाएं
-    const removeBtn = document.createElement('i');
-    removeBtn.className = 'fas fa-times'; // FontAwesome cross icon
-    removeBtn.style.cursor = 'pointer';
-    removeBtn.style.color = '#999';
-    removeBtn.style.marginLeft = 'auto'; // Right side पर रखें
-    removeBtn.title = 'Remove this feature'; // Tooltip
-    
-    // Remove बटन पर क्लिक से item हटाएं
-    removeBtn.addEventListener('click', function(event) {
-        event.stopPropagation(); // Menu टॉगल को रोकें
-        item.remove(); // Item को DOM से हटाएं
-        console.log('Feature removed:', item.textContent.trim()); // Console में लॉग (डिबगिंग के लिए)
-    });
-    
-    // Item में remove बटन एड करें
-    item.appendChild(removeBtn);
-});
 // Sidebar elements select करें
 const sidebar = document.getElementById('sidebar');
 const sidebarOverlay = document.getElementById('sidebarOverlay');
-const hamburgerIcon = document.querySelector('.nav-left i.fas.fa-bars'); // Hamburger icon (3 lines)
+const hamburgerIcon = document.querySelector('.nav-left i.fas.fa-bars'); // Hamburger icon
 
-// Hamburger icon पर क्लिक से sidebar टॉगल करें
-hamburgerIcon.addEventListener('click', function(event) {
-    event.stopPropagation(); // इमीडिएटली बंद न करें
-    sidebar.classList.toggle('active');
-    sidebarOverlay.classList.toggle('active');
-});
+if (hamburgerIcon) { // अगर icon मिला तो ही इवेंट एड करें
+    hamburgerIcon.addEventListener('click', function(event) {
+        event.stopPropagation();
+        sidebar.classList.toggle('active');
+        sidebarOverlay.classList.toggle('active');
+        console.log('Sidebar toggled'); // डिबग लॉग
+    });
+} else {
+    console.error('Hamburger icon not found'); // अगर नहीं मिला तो एरर
+}
 
-// Sidebar को बंद करने के लिए overlay पर क्लिक
-sidebarOverlay.addEventListener('click', function() {
-    sidebar.classList.remove('active');
-    sidebarOverlay.classList.remove('active');
-});
-
-// Body पर क्लिक से भी sidebar बंद करें (अगर sidebar के अंदर नहीं है)
-document.body.addEventListener('click', function(event) {
-    if (!sidebar.contains(event.target) && !hamburgerIcon.contains(event.target)) {
+// Overlay पर क्लिक से बंद
+if (sidebarOverlay) {
+    sidebarOverlay.addEventListener('click', function() {
         sidebar.classList.remove('active');
         sidebarOverlay.classList.remove('active');
+        console.log('Sidebar closed via overlay');
+    });
+}
+
+// Body पर क्लिक से बंद
+document.body.addEventListener('click', function(event) {
+    if (sidebar && hamburgerIcon && !sidebar.contains(event.target) && !hamburgerIcon.contains(event.target)) {
+        sidebar.classList.remove('active');
+        sidebarOverlay.classList.remove('active');
+        console.log('Sidebar closed via body click');
     }
+});
+
+// Plus menu elements
+const plusBtn = document.getElementById('plusBtn');
+const plusMenu = document.getElementById('plusMenu');
+
+if (plusBtn) {
+    plusBtn.addEventListener('click', function(event) {
+        event.stopPropagation();
+        plusMenu.classList.toggle('active');
+        console.log('Plus menu toggled');
+    });
+} else {
+    console.error('Plus button not found');
+}
+
+// Body पर क्लिक से plus menu बंद
+document.body.addEventListener('click', function(event) {
+    if (plusBtn && plusMenu && !plusBtn.contains(event.target) && !plusMenu.contains(event.target)) {
+        plusMenu.classList.remove('active');
+    }
+});
+
+// Menu items में remove बटन
+const menuItems = document.querySelectorAll('.menu-item');
+menuItems.forEach(item => {
+    const removeBtn = document.createElement('i');
+    removeBtn.className = 'fas fa-times';
+    removeBtn.style.cursor = 'pointer';
+    removeBtn.style.color = '#999';
+    removeBtn.style.marginLeft = 'auto';
+    removeBtn.title = 'Remove this feature';
+    
+    removeBtn.addEventListener('click', function(event) {
+        event.stopPropagation();
+        item.remove();
+        console.log('Item removed');
+    });
+    
+    item.appendChild(removeBtn);
+    
+    item.addEventListener('click', function(event) {
+        if (!removeBtn.contains(event.target)) {
+            plusMenu.classList.remove('active');
+        }
+    });
 });
 <script>
 </html>
