@@ -1,1 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeeshu AI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
 
+body { background: #121212; height: 100vh; color: #e0e0e0; }
+
+/* Header */
+.top-nav { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; }
+.nav-left { display: flex; align-items: center; gap: 15px; font-size: 1.2rem; font-weight: 500; color: #e0e0e0; }
+.user-avatar { width: 35px; height: 35px; background: #333333; border-radius: 50%; }
+
+/* Content */
+.content { display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
+.welcome-text { color: #999; font-size: 1.8rem; margin-bottom: 30px; font-weight: 400; }
+
+.features-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 90%; max-width: 500px; }
+.f-card { background: #1e1e1e; border: 1px solid #333333; padding: 15px; border-radius: 20px; text-align: center; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); color: #e0e0e0; }
+
+/* Chatbox Footer */
+.footer-area { position: fixed; bottom: 20px; width: 100%; display: flex; flex-direction: column; align-items: center; padding: 0 15px; z-index: 1000; }
+
+.chat-card { width: 100%; max-width: 600px; background: #1e1e1e; border-radius: 28px; padding: 15px; border: 1px solid #333333; }
+
+textarea { width: 100%; border: none; background: transparent; outline: none; font-size: 1.1rem; resize: none; margin-bottom: 10px; color: #e0e0e0; }
+
+.chat-bottom { display: flex; justify-content: space-between; align-items: center; }
+
+.plus-btn-circle { width: 38px; height: 38px; background: #333333; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #555555; cursor: pointer; color: #e0e0e0; }
+
+.actions-right { display: flex; align-items: center; gap: 20px; color: #999999; font-size: 1.2rem; }
+
+.send-arrow { width: 38px; height: 38px; background: #333333; border: none; border-radius: 50%; color: #e0e0e0; cursor: pointer; }
+
+/* Chatbox container ko relative rakhenge taaki menu uske hisab se chale */
+.footer-area {
+    position: fixed;
+    bottom: 20px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Sab kuch center mein rakhega */
+    padding: 0 15px;
+    z-index: 1000;
+}
+
+/* Plus Menu Styling - Isme ab koi "adhe" hone ki problem nahi aayegi */
+.plus-menu {
+    display: none; /* Default band */
+    width: 200px; /* Width fix kar di taaki mobile par na fate */
+    background: #1e1e1e;
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    margin-bottom: 15px; /* Chatbox ke thoda upar */
+    padding: 8px;
+    border: 1px solid #333333;
+    
+    /* Ye trick menu ko Plus button ke theek upar center karegi */
+    position: absolute;
+    bottom: 80px; /* Chatbox ki height ke hisab se adjust kiya */
+    left: 40px;   /* Plus button ke alignment ke liye */
+    z-index: 2001;
+}
+
+.plus-menu.active {
+    display: block;
+    animation: popUp 0.2s ease-out;
+}
+
+/* Menu items ko sundar banaya */
+.menu-item {
+    padding: 12px 15px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.95rem;
+    color: #e0e0e0;
+    border-radius: 10px;
+    transition: 0.2s;
+}
+
+.menu-item:hover {
+    background: #333333;
+}
+
+.menu-item i {
+    width: 20px;
+    color: #999999;
+    text-align: center;
+}
+
+/* Sidebar Main Style */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 280px;
+    height: 100%;
+    background: #1e1e1e; /* Dark Theme */
+    z-index: 10000;
+    transition: 0.3s ease;
+    padding: 25px 15px;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar.active {
+    left: 0;
+}
+
+/* Searching Chats (Tight Spacing) */
+.search-container {
+    background: #333333;
+    padding: 10px 18px;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px; /* Gap kam kiya */
+}
+
+.search-container input {
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 14px;
+    color: #e0e0e0;
+}
+
+/* Sidebar Menu Group */
+.sidebar-menu-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* Sabhi capsules ke beech ka gap kam kiya */
+}
+
+/* Premium Black & White Capsules */
+.sidebar-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    border-radius: 50px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: 0.2s;
+    border: 1px solid transparent;
+}
+
+/* New Chat (Dark Theme - Jeeshu AI Logo style) */
+.new-chat-btn {
+    background: #000000;
+    color: #ffffff;
+    margin-bottom: 10px;
+}
+
+/* Scanner, Editor, History (Dark Grey Theme) */
+.capsule-item {
+    background: #333333;
+    border: 1px solid #555555;
+    color: #e0e0e0;
+}
+
+.capsule-item:active {
+    background: #444444;
+}
+
+/* Overlay */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    display: none;
+    z-index: 9999;
+}
+
+.sidebar-overlay.active {
+    display: block;
+}
+.title{
+  text-align:center;
+  font-size:28px;
+  margin-top:55px;
+  font-weight:700;
+  color:#cccccc;
+}
+
+/* Buttons wrapper */
+.feature-box{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:16px;     /* spacing better */
+  padding:0 28px;
+  margin-top:35px;
+}
+
+/* Buttons Premium Balanced */
+.card{
+  padding:18px;          /* 👈 thoda bada */
+  border-radius:22px;     /* 👈 smooth round */
+  text-align:center;
+  font-size:15px;         /* 👈 readable text */
+  background:linear-gradient(145deg,#333333,#1e1e1e);
+  border:1px solid #555555;
+  box-shadow:0 10px 26px rgba(0,0,0,0.5);
+  transition:all .3s ease;
+  cursor:pointer;
+  color: #e0e0e0;
+}
+
+/* Hover */
+.card:hover{
+  transform:translateY(-4px);
+  box-shadow:0 16px 36px rgba(0,0,0,0.7);
+  border-color:#777777;
+}
+.login-btn{
+  background: #333333;
+  color: #e0e0e0;
+  padding: 10px 22px;
+  border-radius: 30px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.5);
+  transition: 0.3s ease;
+}
+
+.top-nav{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.login-btn{
+  background: #333333;
+  color: #e0e0e0;
+  padding: 8px 18px;   /* <-- chhota kar diya */
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.5);
+  transition: 0.3s ease;
+}
+
+.login-btn:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.7);
+}
+.user-avatar{
+  width: 38px;
+  height: 38px;
+  background:#333333;
+  border-radius: 50%;
+  display: none;   /* <-- hide */
+}
+.content {
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding-bottom: 100px; /* Input box ke liye jagah */
+}
+    </style>
+</head>
+<body>
+  
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<nav id="sidebar" class="sidebar">
+    <div class="search-container">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Searching Chats...">
+    </div>
+
+    <div class="sidebar-menu-group">
+        <div class="sidebar-btn new-chat-btn">
+            <i class="fas fa-plus"></i> <span>New Chat</span>
+        </div>
+        
+        <div class="sidebar-btn capsule-item">
+            <i class="fas fa-qrcode"></i> <span>Scanner</span>
+        </div>
+        
+        <div class="sidebar-btn capsule-item">
+            <i class="fas fa-magic"></i> <span>Editor</span>
+        </div>
+        
+        <div class="sidebar-btn capsule-item">
+            <i class="fas fa-history"></i> <span>Chats History</span>
+        </div>
+    </div>
+</nav>        
+</div>
+<div id="overlay" class="sidebar-overlay"></div>
+       <div class="app-wrapper">
+         <header class="top-nav">
+  <div class="nav-left">
+      <i class="fas fa-bars"></i>
+      <span class="brand">Jeeshu Ai 
+        <i class="fas fa-chevron-down"></i>
+      </span>
+  </div>
+
+  <div class="right-side">
+      <div class="login-btn">Login</div>
+      <div class="user-avatar"></div>
+  </div>
+
+</header>
+       <main class="content">
+          
+          <h1 class="title">Welcome To Jeeshu Ai</h1>
+<div class="feature-box">
+  <div class="card">✨ Image Generate</div>
+  <div class="card">🖼️ Image Enhance</div>
+  <div class="card">📍 Location</div>
+  <div class="card">🧠 Code Debug</div>
+</div>   
+     </main>
+
+        <div class="footer-area">
+            <div class="plus-menu" id="plusMenu">
+                <div class="menu-item"><i class="fas fa-camera"></i> Take Photo</div>
+                <div class="menu-item"><i class="fas fa-image"></i> Gallery</div>
+                <div class="menu-item"><i class="fas fa-file"></i> Local File</div>
+                <div class="menu-item"><i class="fas fa-share-nodes"></i> Share</div>
+            </div>
+
+            <div class="chat-card">
+                <textarea placeholder="Messages Jeeshu AI..." rows="1"></textarea>
+                <div class="chat-bottom">
+                    <div class="plus-btn-circle" id="plusBtn">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                    <div class="actions-right">
+                        <i class="fas fa-microphone"></i>
+                        <button class="send-arrow"><i class="fas fa-arrow-up"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+<script>
+// Plus button को select करें
+const plusBtn = document.getElementById('plusBtn');
+const plusMenu = document.getElementById('plusMenu');
+
+// Plus button पर क्लिक से menu टॉगल करें
+plusBtn.addEventListener('click', function(event) {
+    event.stopPropagation(); // Menu को इमीडिएटली बंद न करें
+    plusMenu.classList.toggle('active');
+});
+
+// Menu को बंद करने के लिए body पर क्लिक लिस्टनर
+document.body.addEventListener('click', function(event) {
+    // अगर क्लिक plusBtn या plusMenu के अंदर नहीं है, तो menu बंद करें
+    if (!plusBtn.contains(event.target) && !plusMenu.contains(event.target)) {
+        plusMenu.classList.remove('active');
+    }
+});
+
+// हर menu item में हटाने का बटन एड करें और हटाने का फंक्शन
+const menuItems = document.querySelectorAll('.menu-item');
+menuItems.forEach(item => {
+    // Cross icon बटन बनाएं
+    const removeBtn = document.createElement('i');
+    removeBtn.className = 'fas fa-times'; // FontAwesome cross icon
+    removeBtn.style.cursor = 'pointer';
+    removeBtn.style.color = '#999';
+    removeBtn.style.marginLeft = 'auto'; // Right side पर रखें
+    removeBtn.title = 'Remove this feature'; // Tooltip
+    
+    // Remove बटन पर क्लिक से item हटाएं (लेकिन menu बंद न करें)
+    removeBtn.addEventListener('click', function(event) {
+        event.stopPropagation(); // Menu बंद होने से रोकें
+        item.remove(); // Item को DOM से हटाएं
+        console.log('Feature removed:', item.textContent.trim()); // Console में लॉग
+    });
+    
+    // Item में remove बटन एड करें
+    item.appendChild(removeBtn);
+    
+    // Menu item पर क्लिक से भी menu बंद करें (लेकिन remove बटन पर नहीं)
+    item.addEventListener('click', function(event) {
+        if (!removeBtn.contains(event.target)) { // अगर remove बटन पर क्लिक नहीं है
+            plusMenu.classList.remove('active'); // Menu बंद करें
+            // यहाँ तुम item की फंक्शनैलिटी एड कर सकते हो, जैसे कि फोटो लेना
+        }
+    });
+});
+  // Sidebar elements select करें
+const sidebar = document.getElementById('sidebar');
+const sidebarOverlay = document.getElementById('sidebarOverlay');
+const hamburgerIcon = document.querySelector('.nav-left i.fas.fa-bars'); // Hamburger icon (3 lines)
+
+// Hamburger icon पर क्लिक से sidebar टॉगल करें
+hamburgerIcon.addEventListener('click', function(event) {
+    event.stopPropagation(); // इमीडिएटली बंद न करें
+    sidebar.classList.toggle('active');
+    sidebarOverlay.classList.toggle('active');
+});
+
+// Sidebar को बंद करने के लिए overlay पर क्लिक
+sidebarOverlay.addEventListener('click', function() {
+    sidebar.classList.remove('active');
+    sidebarOverlay.classList.remove('active');
+});
+
+// Body पर क्लिक से भी sidebar बंद करें (अगर sidebar के अंदर नहीं है)
+document.body.addEventListener('click', function(event) {
+    if (!sidebar.contains(event.target) && !hamburgerIcon.contains(event.target)) {
+        sidebar.classList.remove('active');
+        sidebarOverlay.classList.remove('active');
+    }
+});
+   </script>
+</html>
