@@ -1,204 +1,137 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-<title>Jeeshu AI</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jeeshu AI Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background: #121212; height: 100vh; color: #e0e0e0; overflow: hidden; }
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+        /* --- Sidebar Premium Order --- */
+        .sidebar { position: fixed; top: 0; left: -100%; width: 280px; height: 100%; background: #1e1e1e; z-index: 10000; transition: 0.3s ease; padding: 20px 15px; border-right: 1px solid #333; display: flex; flex-direction: column; }
+        .sidebar.active { left: 0; }
+        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; z-index: 9999; }
+        .sidebar-overlay.active { display: block; }
 
-<style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}
-body{
-  background:#121212;
-  color:#e0e0e0;
-  min-height:100vh;
-  overflow-x:hidden;
-  -webkit-text-size-adjust:100%;
-}
+        .search-container { background: #333; padding: 10px 18px; border-radius: 50px; display: flex; align-items: center; gap: 10px; margin-bottom: 20px; border: 1px solid #444; }
+        .search-container input { border: none; background: transparent; outline: none; font-size: 14px; color: #e0e0e0; width: 100%; }
 
-/* ===== HEADER ===== */
-.top-nav{
-  height:60px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:0 20px;
-}
-.login-btn{
-  background:#333;
-  color:#fff;
-  border:none;
-  padding:8px 18px;
-  border-radius:999px;
-  font-weight:600;
-  cursor:pointer;
-}
+        .sidebar-menu-group { display: flex; flex-direction: column; gap: 10px; }
+        .sidebar-btn { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-radius: 50px; background: #333; color: white; cursor: pointer; border: 1px solid #444; font-size: 15px; transition: 0.2s; }
+        .new-chat-special { background: #000; border: 1px solid #555; font-weight: 600; margin-top: 5px; }
 
-/* ===== MAIN ===== */
-.content{
-  padding:40px 0 160px;
-  text-align:center;
-}
-.feature-box{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:16px;
-  width:90%;
-  max-width:500px;
-  margin:30px auto;
-}
-.card{
-  background:#1e1e1e;
-  border:1px solid #333;
-  border-radius:22px;
-  padding:18px;
-}
+        .user-profile-section { display: none; align-items: center; gap: 12px; padding: 15px; border-top: 1px solid #333; margin-top: auto; }
+        .user-photo { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #555; }
 
-/* ===== CHAT ===== */
-.footer-area{
-  position:fixed;
-  bottom:20px;
-  width:100%;
-  display:flex;
-  justify-content:center;
-}
-.chat-card{
-  width:90%;
-  max-width:600px;
-  background:#1e1e1e;
-  border-radius:28px;
-  padding:15px;
-  border:1px solid #333;
-}
-textarea{
-  width:100%;
-  background:none;
-  border:none;
-  color:#fff;
-  resize:none;
-  outline:none;
-}
-.chat-bottom{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-top:10px;
-}
-.circle{
-  width:40px;height:40px;
-  background:#333;
-  border-radius:50%;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  cursor:pointer;
-}
+        /* --- Header --- */
+        .top-nav { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; height: 60px; }
+        .nav-left { display: flex; align-items: center; gap: 10px; font-size: 1.2rem; cursor: pointer; font-weight: 600; }
+        .login-btn { background: #333; color: #fff; padding: 8px 18px; border-radius: 999px; border: none; cursor: pointer; font-weight: 600; }
 
-/* ===== LOGIN MODAL ===== */
-.login-overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.85);
-  backdrop-filter:blur(8px);
-  display:none;
-  justify-content:center;
-  align-items:center;
-  z-index:9999;
-}
-.login-overlay.active{display:flex}
-.login-box{
-  width:90%;
-  max-width:380px;
-  background:#1e1e1e;
-  border-radius:30px;
-  padding:40px 30px;
-  border:1px solid #333;
-  text-align:center;
-  position:relative;
-}
-.social-btn{
-  width:100%;
-  padding:13px;
-  border-radius:50px;
-  background:#222;
-  border:1px solid #333;
-  color:#fff;
-  margin-bottom:12px;
-  cursor:pointer;
-}
-.close{
-  position:absolute;
-  top:15px;
-  right:20px;
-  font-size:26px;
-  cursor:pointer;
-  color:#777;
-}
-</style>
+        /* --- Main UI --- */
+        .content { display: flex; flex-direction: column; align-items: center; height: calc(100vh - 140px); overflow-y: auto; width: 100%; padding: 20px 0; }
+        #welcomeSection { text-align: center; width: 100%; margin-top: 40px; }
+        .feature-box { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; width: 90%; max-width: 500px; margin: 0 auto; }
+        .card { padding: 18px; border-radius: 22px; background: linear-gradient(145deg, #333, #1e1e1e); border: 1px solid #444; text-align: center; cursor: pointer; transition: 0.3s; }
+
+        #messageArea { width: 100%; max-width: 650px; display: none; flex-direction: column; gap: 20px; padding: 0 15px; }
+        .user-bubble { align-self: flex-end; background: #333; padding: 12px 18px; border-radius: 20px 20px 0 20px; color: #fff; max-width: 80%; }
+        .ai-bubble { align-self: flex-start; display: flex; gap: 12px; max-width: 90%; }
+        .ai-logo-small { width: 32px; height: 32px; border-radius: 50%; }
+
+        /* --- Footer & Plus Menu --- */
+        .footer-area { position: fixed; bottom: 20px; width: 100%; display: flex; flex-direction: column; align-items: center; padding: 0 15px; z-index: 1000; }
+        .chat-card { width: 100%; max-width: 600px; background: #1e1e1e; border-radius: 28px; padding: 15px; border: 1px solid #333; }
+        textarea { width: 100%; border: none; background: transparent; outline: none; font-size: 1.1rem; resize: none; color: #e0e0e0; min-height: 25px; }
+        
+        .chat-bottom { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+        .plus-btn-circle, .web-search-btn { width: 40px; height: 40px; background: #333; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid #555; }
+        .web-search-btn.active { color: #00ccff; border-color: #00ccff; box-shadow: 0 0 10px rgba(0, 204, 255, 0.4); }
+        .send-arrow { width: 40px; height: 40px; background: #333; border: none; border-radius: 50%; color: #fff; cursor: pointer; }
+
+        .plus-menu { display: none; position: absolute; bottom: 85px; left: 20px; width: 185px; background: #1e1e1e; border-radius: 20px; border: 1px solid #333; padding: 8px; z-index: 2001; }
+        .plus-menu.active { display: block; animation: popUp 0.2s ease-out; }
+        .menu-item { padding: 12px; display: flex; align-items: center; gap: 12px; font-size: 0.95rem; cursor: pointer; border-radius: 12px; }
+
+        /* --- Premium Login Modal --- */
+        .login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 20000; backdrop-filter: blur(8px); }
+        .login-overlay.active { display: flex; }
+        .login-box { background: #1e1e1e; width: 90%; max-width: 380px; padding: 40px 30px; border-radius: 30px; border: 1px solid #333; text-align: center; position: relative; }
+        .social-btn { width: 100%; padding: 13px; margin-bottom: 12px; border-radius: 50px; border: 1px solid #333; background: #222; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
+
+        @keyframes popUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
 </head>
-
 <body>
 
-<header class="top-nav">
-  <div><b>Jeeshu AI</b></div>
-  <button class="login-btn" id="openLogin">Login</button>
-</header>
-
-<main class="content">
-  <h1>Welcome To Jeeshu AI</h1>
-
-  <div class="feature-box">
-    <div class="card">✨ Image Generate</div>
-    <div class="card">🖼️ Image Enhance</div>
-    <div class="card">📍 Location</div>
-    <div class="card">🧠 Code Debug</div>
-  </div>
-</main>
-
-<div class="footer-area">
-  <div class="chat-card">
-    <textarea placeholder="Message Jeeshu AI..."></textarea>
-    <div class="chat-bottom">
-      <div class="circle"><i class="fa fa-plus"></i></div>
-      <div style="display:flex;gap:10px">
-        <i class="fa fa-microphone"></i>
-        <div class="circle"><i class="fa fa-arrow-up"></i></div>
-      </div>
+    <div class="sidebar-overlay" id="overlay"></div>
+    <div class="sidebar" id="sidebar">
+        <div class="search-container"><i class="fas fa-search" style="color:#999"></i><input type="text" placeholder="Search chats..."></div>
+        <div class="sidebar-menu-group">
+            <div class="sidebar-btn"><i class="fas fa-qrcode"></i> Scanner</div>
+            <div class="sidebar-btn"><i class="fas fa-pen-nib"></i> Editor</div>
+            <div class="sidebar-btn new-chat-special"><i class="fas fa-plus"></i> New Chat</div>
+            <div class="sidebar-btn"><i class="fas fa-history"></i> Chats History</div>
+        </div>
+        <div class="user-profile-section" id="userProfile"><img src="" id="userImg" class="user-photo"><span id="userName">User</span></div>
     </div>
-  </div>
-</div>
 
-<!-- LOGIN -->
-<div class="login-overlay" id="loginBox">
-  <div class="login-box">
-    <div class="close" id="closeLogin">&times;</div>
+    <header class="top-nav">
+        <div class="nav-left" id="menuToggle"><i class="fas fa-bars"></i> <span>Jeeshu Ai <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i></span></div>
+        <button class="login-btn" id="openLogin">Login</button>
+    </header>
 
-    <img src="https://raw.githubusercontent.com/JeeshuAI/assets/main/logo.png"
-         style="width:70px;border-radius:16px;margin-bottom:15px">
+    <main class="content" id="mainContent">
+        <div id="welcomeSection">
+            <h1 class="title">Welcome To Jeeshu Ai</h1>
+            <div class="feature-box">
+                <div class="card">✨ Image Generate</div>
+                <div class="card">🖼️ Image Enhance</div>
+                <div class="card">📍 Location</div>
+                <div class="card">🧠 Code Debug</div>
+            </div>
+        </div>
+        <div id="messageArea"></div>
+    </main>
 
-    <h2>Jeeshu AI</h2>
-    <p style="color:#888;font-size:14px;margin-bottom:25px">
-      Your Smart AI Companion
-    </p>
+    <div class="footer-area">
+        <div class="plus-menu" id="plusMenu">
+            <div class="menu-item"><i class="fas fa-camera"></i> Take Photo</div>
+            <div class="menu-item"><i class="fas fa-image"></i> Gallery</div>
+            <div class="menu-item"><i class="fas fa-file"></i> Local File</div>
+            <div class="menu-item"><i class="fas fa-share-alt"></i> Share Chat</div>
+        </div>
+        <div class="chat-card">
+            <textarea id="userInput" placeholder="Messages Jeeshu AI..." rows="1"></textarea>
+            <div class="chat-bottom">
+                <div style="display:flex; gap:12px;">
+                    <div class="plus-btn-circle" id="plusBtn"><i class="fas fa-plus"></i></div>
+                    <div class="web-search-btn" id="webToggle"><i class="fas fa-globe"></i></div>
+                </div>
+                <div style="display:flex; gap:15px; align-items:center;">
+                    <i class="fas fa-microphone" style="color:#999; font-size:1.2rem;"></i>
+                    <button class="send-arrow" id="sendBtn"><i class="fas fa-arrow-up"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <button class="social-btn" id="googleLogin">
-      <i class="fab fa-google"></i> Continue with Google
-    </button>
-    <button class="social-btn">
-      <i class="fab fa-apple"></i> Continue with Apple
-    </button>
-    <button class="social-btn">
-      <i class="fa fa-envelope"></i> Continue with Email
-    </button>
-  </div>
-</div>
-
-<!-- FIREBASE -->
-<script type="module">
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <div id="closeLogin" style="position:absolute; top:20px; right:25px; cursor:pointer; font-size:24px; color:#777;">&times;</div>
+            <img src="https://raw.githubusercontent.com/JeeshuAI/assets/main/logo.png" style="width:65px; margin-bottom:15px; border-radius:14px;">
+            <h2 style="margin-bottom:5px;">Jeeshu AI</h2>
+            <p style="color:#888; font-size:0.85rem; margin-bottom:25px;">Your Smart AI Companion</p>
+            <button class="social-btn" id="googleLoginBtn"><i class="fab fa-google"></i> Continue with Google</button>
+            <button class="social-btn"><i class="fab fa-apple"></i> Continue with Apple</button>
+            <button class="social-btn"><i class="fas fa-envelope"></i> Continue with Email</button>
+        </div>
+    </div>
+    <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup } 
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAz5Ki2f0z_6VwumqQDnYKpByDi9FsrjD4",
@@ -206,24 +139,104 @@ const firebaseConfig = {
   projectId: "jeeshu-ai-f2673",
   storageBucket: "jeeshu-ai-f2673.firebasestorage.app",
   messagingSenderId: "721216244975",
-  appId: "1:721216244975:web:d9e5dcb96ada3339981f1a"
+  appId: "1:721216244975:web:d9e5dcb96ada3339981f1a",
+  measurementId: "G-GX6P77RCHT"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-const loginBox = document.getElementById("loginBox");
+/* ========= UI ELEMENTS ========= */
+const sidebar = document.getElementById("sidebar");
+const overlay = document.getElementById("overlay");
+const menuToggle = document.getElementById("menuToggle");
 
-document.getElementById("openLogin").onclick=()=>loginBox.classList.add("active");
-document.getElementById("closeLogin").onclick=()=>loginBox.classList.remove("active");
+const plusBtn = document.getElementById("plusBtn");
+const plusMenu = document.getElementById("plusMenu");
 
-document.getElementById("googleLogin").onclick=()=>{
-  signInWithPopup(auth,provider)
-    .then(()=>loginBox.classList.remove("active"))
-    .catch(e=>alert(e.message));
+const webToggle = document.getElementById("webToggle");
+const sendBtn = document.getElementById("sendBtn");
+const userInput = document.getElementById("userInput");
+
+const welcomeSection = document.getElementById("welcomeSection");
+const messageArea = document.getElementById("messageArea");
+
+const openLogin = document.getElementById("openLogin");
+const closeLogin = document.getElementById("closeLogin");
+const loginOverlay = document.getElementById("loginOverlay");
+
+/* ========= SIDEBAR ========= */
+menuToggle.onclick = (e) => {
+  e.stopPropagation();
+  sidebar.classList.add("active");
+  overlay.classList.add("active");
 };
+
+overlay.onclick = () => {
+  sidebar.classList.remove("active");
+  overlay.classList.remove("active");
+};
+
+/* ========= PLUS MENU ========= */
+plusBtn.onclick = (e) => {
+  e.stopPropagation();
+  plusMenu.classList.toggle("active");
+};
+
+/* ========= WEB SEARCH BUTTON ========= */
+webToggle.onclick = (e) => {
+  e.stopPropagation();
+  webToggle.classList.toggle("active");
+};
+
+/* ========= LOGIN MODAL ========= */
+openLogin.onclick = () => loginOverlay.classList.add("active");
+closeLogin.onclick = () => loginOverlay.classList.remove("active");
+
+/* ========= SEND MESSAGE ========= */
+function sendMessage() {
+  const text = userInput.value.trim();
+  if (!text) return;
+
+  welcomeSection.style.display = "none";
+  messageArea.style.display = "flex";
+
+  const bubble = document.createElement("div");
+  bubble.className = "user-bubble";
+  bubble.innerText = text;
+  messageArea.appendChild(bubble);
+
+  userInput.value = "";
+  messageArea.scrollTop = messageArea.scrollHeight;
+}
+
+sendBtn.onclick = sendMessage;
+
+/* ========= GOOGLE LOGIN ========= */
+document.getElementById("googleLoginBtn").onclick = () => {
+  signInWithPopup(auth, provider).then(() => {
+    loginOverlay.classList.remove("active");
+  });
+};
+
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    openLogin.style.display = "none";
+    document.getElementById("userProfile").style.display = "flex";
+    document.getElementById("userImg").src = user.photoURL;
+    document.getElementById("userName").innerText = user.displayName;
+  }
+});
+
+/* ========= SAFE GLOBAL CLICK ========= */
+document.addEventListener("click", (e) => {
+  if (!plusMenu.contains(e.target) && !plusBtn.contains(e.target)) {
+    plusMenu.classList.remove("active");
+  }
+});
 </script>
 
-</body>
-</html>
+
+
+    
