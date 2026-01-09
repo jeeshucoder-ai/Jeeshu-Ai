@@ -30,7 +30,19 @@
         .nav-left { display: flex; align-items: center; gap: 10px; font-size: 1.2rem; cursor: pointer; font-weight: 600; }
         .login-btn { background: #333; color: #fff; padding: 8px 18px; border-radius: 999px; border: none; cursor: pointer; font-weight: 600; }
 
-        /* --- Main UI --- */
+            .profile-icon {
+            display: none;           /* login ke baad JS se show hoga */
+          cursor: pointer;
+        }
+
+      .profile-icon img {
+      width: 36px;
+      height: 36px;
+     border-radius: 50%;
+     object-fit: cover;
+     border: 1px solid #555;
+       }
+          /* --- Main UI --- */
         .content { display: flex; flex-direction: column; align-items: center; height: calc(100vh - 140px); overflow-y: auto; width: 100%; padding: 35px 0; }
         #welcomeSection { text-align: center; width: 100%; margin-top: 20px; }
         .feature-box { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; width: 90%; max-width: 500px; margin: 0 auto; }
@@ -77,13 +89,20 @@
         </div>
         <div class="user-profile-section" id="userProfile"><img src="" id="userImg" class="user-photo"><span id="userName">User</span></div>
     </div>
+<header class="top-nav">
+  <div class="nav-left" id="menuToggle">
+    <i class="fas fa-bars"></i>
+    <span>Jeeshu Ai</span>
+  </div>
 
-    <header class="top-nav">
-        <div class="nav-left" id="menuToggle"><i class="fas fa-bars"></i> <span>Jeeshu Ai <i class="fas fa-chevron-down" style="font-size: 0.7rem;"></i></span></div>
-        <button class="login-btn" id="openLogin">Login</button>
-    </header>
+  <button class="login-btn" id="openLogin">Login</button>
 
-    <main class="content" id="mainContent">
+  <!-- PROFILE ICON -->
+  <div class="profile-icon" id="profileIcon">
+    <img id="profilePic" src="" alt="Profile">
+  </div>
+</header>
+   <main class="content" id="mainContent">
         <div id="welcomeSection">
             <h1 class="title">Welcome To Jeeshu Ai</h1>
             <div class="feature-box">
@@ -220,6 +239,12 @@ document.getElementById("googleLoginBtn").onclick = () => {
   });
 };
 
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    openLogin.style.display = "none";
+    document.getElementById("userProfile").style.display = "flex";
+    document.getElementById("userImg").src = user.photoURL;
+    document.getElementById("userName").innerText = user.displayName;
 onAuthStateChanged(auth, (user) => {
   if (user) {
     openLogin.style.display = "none";
