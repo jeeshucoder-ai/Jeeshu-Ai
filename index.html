@@ -147,121 +147,118 @@
             <button class="social-btn"><i class="fab fa-apple"></i> Continue with Apple</button>
             <button class="social-btn"><i class="fas fa-envelope"></i> Continue with Email</button>
         </div>
-    </div>
+    </div>  
     <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
+/* 🔥 FIREBASE CONFIG (tumhara hi) */
 const firebaseConfig = {
-  apiKey: "AIzaSyAz5Ki2f0z_6VwumqQDnYKpByDi9FsrjD4",
+  apiKey: "AIzaSyAz5Ki2f0z_6VwumqQDnYKpBY...",
   authDomain: "jeeshu-ai-f2673.firebaseapp.com",
   projectId: "jeeshu-ai-f2673",
-  storageBucket: "jeeshu-ai-f2673.firebasestorage.app",
+  storageBucket: "jeeshu-ai-f2673.appspot.com",
   messagingSenderId: "721216244975",
-  appId: "1:721216244975:web:d9e5dcb96ada3339981f1a",
-  measurementId: "G-GX6P77RCHT"
+  appId: "1:721216244975:web:d9e5dcb96ada3339981f1a"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-/* ========= UI ELEMENTS ========= */
+/* ==== ELEMENTS ==== */
 const sidebar = document.getElementById("sidebar");
 const overlay = document.getElementById("overlay");
 const menuToggle = document.getElementById("menuToggle");
 
 const plusBtn = document.getElementById("plusBtn");
 const plusMenu = document.getElementById("plusMenu");
-
 const webToggle = document.getElementById("webToggle");
-const sendBtn = document.getElementById("sendBtn");
-const userInput = document.getElementById("userInput");
-
-const welcomeSection = document.getElementById("welcomeSection");
-const messageArea = document.getElementById("messageArea");
 
 const openLogin = document.getElementById("openLogin");
 const closeLogin = document.getElementById("closeLogin");
 const loginOverlay = document.getElementById("loginOverlay");
 
-/* ========= SIDEBAR ========= */
-menuToggle.onclick = (e) => {
-  e.stopPropagation();
-  sidebar.classList.add("active");
-  overlay.classList.add("active");
-};
+const sendBtn = document.getElementById("sendBtn");
+const userInput = document.getElementById("userInput");
+const welcomeSection = document.getElementById("welcomeSection");
+const messageArea = document.getElementById("messageArea");
 
-overlay.onclick = () => {
-  sidebar.classList.remove("active");
-  overlay.classList.remove("active");
-};
-
-/* ========= PLUS MENU ========= */
-plusBtn.onclick = (e) => {
-  e.stopPropagation();
-  plusMenu.classList.toggle("active");
-};
-
-/* ========= WEB SEARCH BUTTON ========= */
-webToggle.onclick = (e) => {
-  e.stopPropagation();
-  webToggle.classList.toggle("active");
-};
-
-/* ========= LOGIN MODAL ========= */
-openLogin.onclick = () => loginOverlay.classList.add("active");
-closeLogin.onclick = () => loginOverlay.classList.remove("active");
-
-/* ========= SEND MESSAGE ========= */
-function sendMessage() {
-  const text = userInput.value.trim();
-  if (!text) return;
-
-  welcomeSection.style.display = "none";
-  messageArea.style.display = "flex";
-
-  const bubble = document.createElement("div");
-  bubble.className = "user-bubble";
-  bubble.innerText = text;
-  messageArea.appendChild(bubble);
-
-  userInput.value = "";
-  messageArea.scrollTop = messageArea.scrollHeight;
+/* ==== SIDEBAR ==== */
+if (menuToggle && sidebar && overlay) {
+  menuToggle.onclick = () => {
+    sidebar.classList.add("active");
+    overlay.classList.add("active");
+  };
+  overlay.onclick = () => {
+    sidebar.classList.remove("active");
+    overlay.classList.remove("active");
+  };
 }
 
-sendBtn.onclick = sendMessage;
+/* ==== PLUS MENU ==== */
+if (plusBtn && plusMenu) {
+  plusBtn.onclick = (e) => {
+    e.stopPropagation();
+    plusMenu.classList.toggle("active");
+  };
+}
 
-/* ========= GOOGLE LOGIN ========= */
-document.getElementById("googleLoginBtn").onclick = () => {
-  signInWithPopup(auth, provider).then(() => {
-    loginOverlay.classList.remove("active");
-  });
-};
-
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    openLogin.style.display = "none";
-    document.getElementById("userProfile").style.display = "flex";
-    document.getElementById("userImg").src = user.photoURL;
-    document.getElementById("userName").innerText = user.displayName;
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    openLogin.style.display = "none";
-    document.getElementById("userProfile").style.display = "flex";
-    document.getElementById("userImg").src = user.photoURL;
-    document.getElementById("userName").innerText = user.displayName;
-  }
-});
-
-/* ========= SAFE GLOBAL CLICK ========= */
 document.addEventListener("click", (e) => {
-  if (!plusMenu.contains(e.target) && !plusBtn.contains(e.target)) {
+  if (plusMenu && !plusMenu.contains(e.target) && !plusBtn.contains(e.target)) {
     plusMenu.classList.remove("active");
   }
 });
+
+/* ==== WEB SEARCH ==== */
+if (webToggle) {
+  webToggle.onclick = () => webToggle.classList.toggle("active");
+}
+
+/* ==== LOGIN MODAL ==== */
+if (openLogin && loginOverlay) {
+  openLogin.onclick = () => loginOverlay.classList.add("active");
+}
+if (closeLogin && loginOverlay) {
+  closeLogin.onclick = () => loginOverlay.classList.remove("active");
+}
+
+/* ==== GOOGLE LOGIN ==== */
+const googleBtn = document.getElementById("googleLoginBtn");
+if (googleBtn) {
+  googleBtn.onclick = () => {
+    signInWithPopup(auth, provider)
+      .then(() => loginOverlay.classList.remove("active"))
+      .catch(err => alert(err.message));
+  };
+}
+
+/* ==== AUTH STATE ==== */
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    openLogin.style.display = "none";
+    document.getElementById("userProfile").style.display = "flex";
+    document.getElementById("userImg").src = user.photoURL;
+    document.getElementById("userName").innerText = user.displayName;
+  }
+});
+
+/* ==== SEND MESSAGE ==== */
+if (sendBtn) {
+  sendBtn.onclick = () => {
+    const text = userInput.value.trim();
+    if (!text) return;
+
+    welcomeSection.style.display = "none";
+    messageArea.style.display = "flex";
+
+    const bubble = document.createElement("div");
+    bubble.className = "user-bubble";
+    bubble.innerText = text;
+    messageArea.appendChild(bubble);
+
+    userInput.value = "";
+    messageArea.scrollTop = messageArea.scrollHeight;
+  };
+}
 </script>
-
-
-
-    
