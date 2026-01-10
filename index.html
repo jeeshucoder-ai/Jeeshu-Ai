@@ -282,37 +282,35 @@ onAuthStateChanged(auth, (user) => {
     openLogin.style.display = "none";
   }
 });
-
-/* ================= CHAT ================= */
 function addMessage(sender, text) {
-  const div = document.createElement("div");
-  div.className = sender === "You" ? "user-bubble" : "ai-bubble";
-  div.innerText = text;
-  chatArea.appendChild(div);
-  chatArea.scrollTop = chatArea.scrollHeight;
+  ...
 }
+async function sendMessage() {
+  const message = userInput.value.trim();
+  if (!message) return;
 
-sendBtn.onclick = async () => {
-  const msg = userInput.value.trim();
-  if (!msg) return;
-
-  addMessage("You", msg);
+  addMessage("You", message);
   userInput.value = "";
 
-  if (welcomeSection) {
-    welcomeSection.classList.add("hide");
-    setTimeout(() => welcomeSection.style.display = "none", 400);
-  }
-
-  chatArea.style.display = "flex";
-
   try {
-    const res = await fetch("https://restless-cherry-9f98.jeeshucoder.workers.dev");
-    const text = await res.text();
-    addMessage("AI", text);
-  } catch {
-    addMessage("AI", "Server error");
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message })
+    });
+
+    const data = await res.json();
+    addMessage("AI", data.reply || "No reply");
+
+  } catch (err) {
+    addMessage("AI", "Server error 😢");
   }
-};
+}
+
+sendBtn.onclick = sendMessage;
+
+userInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") sendMessage();
+});
 </script>
 
