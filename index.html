@@ -148,17 +148,21 @@
   </div>
 </header>
    <main class="content" id="mainContent">
-        <div id="welcomeSection">
-            <div id="messageArea"></div>
-            <h1 class="title">Welcome To Jeeshu Ai</h1>
-            <div class="feature-box">
-                <div class="card">✨ Image Generate</div>
-                <div class="card">🖼️ Image Enhance</div>
-                <div class="card">📍 Location</div>
-                <div class="card">🧠 Code Debug</div>
-            </div>
-        </div>
-        <div id="messageArea"></div>
+
+  <!-- WELCOME UI -->
+  <div id="welcomeSection">
+    <h1 class="title">Welcome To Jeeshu Ai</h1>
+
+    <div class="feature-box">
+      <div class="card">✨ Image Generate</div>
+      <div class="card">🖼️ Image Enhance</div>
+      <div class="card">📍 Location</div>
+      <div class="card">🧠 Code Debug</div>
+    </div>
+  </div>
+
+  <!-- CHAT AREA (ONLY ONE) -->
+  <div id="messageArea"></div>
     </main>
 
     <div class="footer-area">
@@ -205,10 +209,10 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAz5Ki2f0z_6VwumqQDnYKpByDi9FsrjD4",
+  apiKey: "AIzaSyAz5Ki2foz_6VvumqQDnYKpByDi9FsrjD4",
   authDomain: "jeeshu-ai-f2673.firebaseapp.com",
   projectId: "jeeshu-ai-f2673",
-  storageBucket: "jeeshu-ai-f2673.firebasestorage.app",
+  storageBucket: "jeeshu-ai-f2673.appspot.com",
   messagingSenderId: "721216244975",
   appId: "1:721216244975:web:d9e5dcb96ada3339981f1a"
 };
@@ -231,15 +235,10 @@ const closeLogin = document.getElementById("closeLogin");
 const loginOverlay = document.getElementById("loginOverlay");
 const googleBtn = document.getElementById("googleLoginBtn");
 
-const userProfile = document.getElementById("userProfile");
-const userImg = document.getElementById("userImg");
-const userName = document.getElementById("userName");
-
 const sendBtn = document.getElementById("sendBtn");
 const userInput = document.getElementById("userInput");
-
-/* 🔥 FIXED ID (IMPORTANT) */
 const chatArea = document.getElementById("messageArea");
+const welcomeSection = document.getElementById("welcomeSection");
 
 /* ================= SIDEBAR ================= */
 menuToggle.onclick = () => {
@@ -268,31 +267,23 @@ webToggle.onclick = (e) => {
   webToggle.classList.toggle("active");
 };
 
-/* ================= LOGIN MODAL ================= */
+/* ================= LOGIN ================= */
 openLogin.onclick = () => loginOverlay.classList.add("active");
 closeLogin.onclick = () => loginOverlay.classList.remove("active");
 
-/* ================= GOOGLE LOGIN ================= */
 googleBtn.onclick = () => {
   signInWithPopup(auth, provider)
     .then(() => loginOverlay.classList.remove("active"))
     .catch(err => alert(err.message));
 };
 
-/* ================= AUTH STATE ================= */
 onAuthStateChanged(auth, (user) => {
   if (user) {
     openLogin.style.display = "none";
-    userProfile.style.display = "flex";
-    userImg.src = user.photoURL;
-    userName.innerText = user.displayName;
   }
 });
-const sendBtn = document.getElementById("sendBtn");
-const userInput = document.getElementById("userInput");
-const chatArea = document.getElementById("messageArea");
-const welcomeSection = document.getElementById("welcomeSection");
 
+/* ================= CHAT ================= */
 function addMessage(sender, text) {
   const div = document.createElement("div");
   div.className = sender === "You" ? "user-bubble" : "ai-bubble";
@@ -305,25 +296,23 @@ sendBtn.onclick = async () => {
   const msg = userInput.value.trim();
   if (!msg) return;
 
-  /* show chat + hide welcome */
-  chatArea.style.display = "flex";
+  addMessage("You", msg);
+  userInput.value = "";
+
   if (welcomeSection) {
     welcomeSection.classList.add("hide");
     setTimeout(() => welcomeSection.style.display = "none", 400);
   }
 
-  addMessage("You", msg);
-  userInput.value = "";
+  chatArea.style.display = "flex";
 
   try {
-    const res = await fetch(
-      "https://restless-cherry-9f98.jeeshucoder.workers.dev"
-    );
+    const res = await fetch("https://restless-cherry-9f98.jeeshucoder.workers.dev");
     const text = await res.text();
     addMessage("AI", text);
-  } catch (e) {
+  } catch {
     addMessage("AI", "Server error");
   }
 };
 </script>
-    
+
