@@ -147,17 +147,21 @@
             <button class="social-btn"><i class="fab fa-apple"></i> Continue with Apple</button>
             <button class="social-btn"><i class="fas fa-envelope"></i> Continue with Email</button>
         </div>
-    </div>  
+    </div> 
     <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {
+  getAuth,
+  signInWithPopup,
+  GoogleAuthProvider,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-/* 🔥 FIREBASE CONFIG (tumhara hi) */
 const firebaseConfig = {
-  apiKey: "AIzaSyAz5Ki2f0z_6VwumqQDnYKpBY...",
+  apiKey: "AIzaSyAz5Ki2f0z_6VwumqQDnYKpByDi9FsrjD4",
   authDomain: "jeeshu-ai-f2673.firebaseapp.com",
   projectId: "jeeshu-ai-f2673",
-  storageBucket: "jeeshu-ai-f2673.appspot.com",
+  storageBucket: "jeeshu-ai-f2673.firebasestorage.app",
   messagingSenderId: "721216244975",
   appId: "1:721216244975:web:d9e5dcb96ada3339981f1a"
 };
@@ -166,7 +170,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-/* ==== ELEMENTS ==== */
+/* ===== ELEMENTS ===== */
 const sidebar = document.getElementById("sidebar");
 const overlay = document.getElementById("overlay");
 const menuToggle = document.getElementById("menuToggle");
@@ -178,87 +182,58 @@ const webToggle = document.getElementById("webToggle");
 const openLogin = document.getElementById("openLogin");
 const closeLogin = document.getElementById("closeLogin");
 const loginOverlay = document.getElementById("loginOverlay");
+const googleBtn = document.getElementById("googleLoginBtn");
 
-const sendBtn = document.getElementById("sendBtn");
-const userInput = document.getElementById("userInput");
-const welcomeSection = document.getElementById("welcomeSection");
-const messageArea = document.getElementById("messageArea");
+const userProfile = document.getElementById("userProfile");
+const userImg = document.getElementById("userImg");
+const userName = document.getElementById("userName");
 
-/* ==== SIDEBAR ==== */
-if (menuToggle && sidebar && overlay) {
-  menuToggle.onclick = () => {
-    sidebar.classList.add("active");
-    overlay.classList.add("active");
-  };
-  overlay.onclick = () => {
-    sidebar.classList.remove("active");
-    overlay.classList.remove("active");
-  };
-}
+/* ===== SIDEBAR ===== */
+menuToggle.onclick = () => {
+  sidebar.classList.add("active");
+  overlay.classList.add("active");
+};
 
-/* ==== PLUS MENU ==== */
-if (plusBtn && plusMenu) {
-  plusBtn.onclick = (e) => {
-    e.stopPropagation();
-    plusMenu.classList.toggle("active");
-  };
-}
+overlay.onclick = () => {
+  sidebar.classList.remove("active");
+  overlay.classList.remove("active");
+};
 
-document.addEventListener("click", (e) => {
-  if (plusMenu && !plusMenu.contains(e.target) && !plusBtn.contains(e.target)) {
-    plusMenu.classList.remove("active");
-  }
+/* ===== PLUS MENU ===== */
+plusBtn.onclick = (e) => {
+  e.stopPropagation();
+  plusMenu.classList.toggle("active");
+};
+
+document.addEventListener("click", () => {
+  plusMenu.classList.remove("active");
 });
 
-/* ==== WEB SEARCH ==== */
-if (webToggle) {
-  webToggle.onclick = () => webToggle.classList.toggle("active");
-}
+/* ===== WEB SEARCH ===== */
+webToggle.onclick = (e) => {
+  e.stopPropagation();
+  webToggle.classList.toggle("active");
+};
 
-/* ==== LOGIN MODAL ==== */
-if (openLogin && loginOverlay) {
-  openLogin.onclick = () => loginOverlay.classList.add("active");
-}
-if (closeLogin && loginOverlay) {
-  closeLogin.onclick = () => loginOverlay.classList.remove("active");
-}
+/* ===== LOGIN MODAL ===== */
+openLogin.onclick = () => loginOverlay.classList.add("active");
+closeLogin.onclick = () => loginOverlay.classList.remove("active");
 
-/* ==== GOOGLE LOGIN ==== */
-const googleBtn = document.getElementById("googleLoginBtn");
-if (googleBtn) {
-  googleBtn.onclick = () => {
-    signInWithPopup(auth, provider)
-      .then(() => loginOverlay.classList.remove("active"))
-      .catch(err => alert(err.message));
-  };
-}
+/* ===== GOOGLE LOGIN ===== */
+googleBtn.onclick = () => {
+  signInWithPopup(auth, provider)
+    .then(() => loginOverlay.classList.remove("active"))
+    .catch(err => alert(err.message));
+};
 
-/* ==== AUTH STATE ==== */
+/* ===== AUTH STATE (IMPORTANT) ===== */
 onAuthStateChanged(auth, (user) => {
   if (user) {
     openLogin.style.display = "none";
-    document.getElementById("userProfile").style.display = "flex";
-    document.getElementById("userImg").src = user.photoURL;
-    document.getElementById("userName").innerText = user.displayName;
+    userProfile.style.display = "flex";
+    userImg.src = user.photoURL;
+    userName.innerText = user.displayName;
   }
 });
-
-/* ==== SEND MESSAGE ==== */
-if (sendBtn) {
-  sendBtn.onclick = () => {
-    const text = userInput.value.trim();
-    if (!text) return;
-
-    welcomeSection.style.display = "none";
-    messageArea.style.display = "flex";
-
-    const bubble = document.createElement("div");
-    bubble.className = "user-bubble";
-    bubble.innerText = text;
-    messageArea.appendChild(bubble);
-
-    userInput.value = "";
-    messageArea.scrollTop = messageArea.scrollHeight;
-  };
-}
 </script>
+    
