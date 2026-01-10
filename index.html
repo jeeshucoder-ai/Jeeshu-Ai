@@ -148,7 +148,8 @@
             <button class="social-btn"><i class="fas fa-envelope"></i> Continue with Email</button>
         </div>
     </div> 
-    <script type="module">
+ <script type="module">
+/* ================= FIREBASE ================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
   getAuth,
@@ -170,7 +171,7 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-/* ===== ELEMENTS ===== */
+/* ================= ELEMENTS ================= */
 const sidebar = document.getElementById("sidebar");
 const overlay = document.getElementById("overlay");
 const menuToggle = document.getElementById("menuToggle");
@@ -188,7 +189,13 @@ const userProfile = document.getElementById("userProfile");
 const userImg = document.getElementById("userImg");
 const userName = document.getElementById("userName");
 
-/* ===== SIDEBAR ===== */
+const sendBtn = document.getElementById("sendBtn");
+const userInput = document.getElementById("userInput");
+
+/* 🔥 FIXED ID (IMPORTANT) */
+const chatArea = document.getElementById("messageArea");
+
+/* ================= SIDEBAR ================= */
 menuToggle.onclick = () => {
   sidebar.classList.add("active");
   overlay.classList.add("active");
@@ -199,7 +206,7 @@ overlay.onclick = () => {
   overlay.classList.remove("active");
 };
 
-/* ===== PLUS MENU ===== */
+/* ================= PLUS MENU ================= */
 plusBtn.onclick = (e) => {
   e.stopPropagation();
   plusMenu.classList.toggle("active");
@@ -209,24 +216,24 @@ document.addEventListener("click", () => {
   plusMenu.classList.remove("active");
 });
 
-/* ===== WEB SEARCH ===== */
+/* ================= WEB SEARCH ================= */
 webToggle.onclick = (e) => {
   e.stopPropagation();
   webToggle.classList.toggle("active");
 };
 
-/* ===== LOGIN MODAL ===== */
+/* ================= LOGIN MODAL ================= */
 openLogin.onclick = () => loginOverlay.classList.add("active");
 closeLogin.onclick = () => loginOverlay.classList.remove("active");
 
-/* ===== GOOGLE LOGIN ===== */
+/* ================= GOOGLE LOGIN ================= */
 googleBtn.onclick = () => {
   signInWithPopup(auth, provider)
     .then(() => loginOverlay.classList.remove("active"))
     .catch(err => alert(err.message));
 };
 
-/* ===== AUTH STATE (IMPORTANT) ===== */
+/* ================= AUTH STATE ================= */
 onAuthStateChanged(auth, (user) => {
   if (user) {
     openLogin.style.display = "none";
@@ -235,5 +242,32 @@ onAuthStateChanged(auth, (user) => {
     userName.innerText = user.displayName;
   }
 });
+
+/* ================= CHAT UI ================= */
+function addMessage(sender, text) {
+  const div = document.createElement("div");
+  div.className = sender === "You" ? "user-msg" : "ai-msg";
+  div.innerText = text;
+  chatArea.appendChild(div);
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+/* ================= SEND MESSAGE ================= */
+sendBtn.onclick = async () => {
+  const msg = userInput.value.trim();
+  if (!msg) return;
+
+  addMessage("You", msg);
+  userInput.value = "";
+
+  try {
+    const res = await fetch("https://restless-cherry-9f98.jeeshucoder.workers.dev");
+    const text = await res.text();
+    addMessage("AI", text);
+  } catch (err) {
+    addMessage("AI", "Server error");
+  }
+};
+</script>
 </script>
     
