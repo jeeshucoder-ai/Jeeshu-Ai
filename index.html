@@ -48,12 +48,16 @@
         .feature-box { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; width: 90%; max-width: 500px; margin: 0 auto; }
         .card { padding: 18px; border-radius: 22px; background: linear-gradient(145deg, #333, #1e1e1e); border: 1px solid #444; text-align: center; cursor: pointer; transition: 0.3s; }
 
-        #messageArea { width: 100%; max-width: 650px; display: none; flex-direction: column; gap: 20px; padding: 0 15px; }
-        .user-bubble { align-self: flex-end; background: #333; padding: 12px 18px; border-radius: 20px 20px 0 20px; color: #fff; max-width: 80%; }
-        .ai-bubble { align-self: flex-start; display: flex; gap: 12px; max-width: 90%; }
-        .ai-logo-small { width: 32px; height: 32px; border-radius: 50%; }
-
-        /* --- Footer & Plus Menu --- */
+        #messageArea {
+  width: 100%;
+  max-width: 650px;
+  display: flex;              /* 🔥 IMPORTANT */
+  flex-direction: column;
+  gap: 12px;
+  padding: 15px;
+  overflow-y: auto;
+}
+ /* --- Footer & Plus Menu --- */
         .footer-area { position: fixed; bottom: 20px; width: 100%; display: flex; flex-direction: column; align-items: center; padding: 0 15px; z-index: 1000; }
         .chat-card { width: 100%; max-width: 600px; background: #1e1e1e; border-radius: 28px; padding: 15px; border: 1px solid #333; }
         textarea { width: 100%; border: none; background: transparent; outline: none; font-size: 1.1rem; resize: none; color: #e0e0e0; min-height: 25px; }
@@ -246,13 +250,12 @@ onAuthStateChanged(auth, (user) => {
 /* ================= CHAT UI ================= */
 function addMessage(sender, text) {
   const div = document.createElement("div");
-  div.className = sender === "You" ? "user-msg" : "ai-msg";
+  div.className = sender === "You" ? "user-bubble" : "ai-bubble";
   div.innerText = text;
   chatArea.appendChild(div);
   chatArea.scrollTop = chatArea.scrollHeight;
 }
 
-/* ================= SEND MESSAGE ================= */
 sendBtn.onclick = async () => {
   const msg = userInput.value.trim();
   if (!msg) return;
@@ -261,13 +264,14 @@ sendBtn.onclick = async () => {
   userInput.value = "";
 
   try {
-    const res = await fetch("https://restless-cherry-9f98.jeeshucoder.workers.dev");
+    const res = await fetch(
+      "https://restless-cherry-9f98.jeeshucoder.workers.dev"
+    );
     const text = await res.text();
     addMessage("AI", text);
-  } catch (err) {
+  } catch (e) {
     addMessage("AI", "Server error");
   }
 };
 </script>
-
     
