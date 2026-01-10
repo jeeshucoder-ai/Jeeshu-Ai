@@ -57,6 +57,7 @@
    }      
   #messageArea {
   display: flex;
+}
   flex-direction: column;
   gap: 10px;
   width: 100%;
@@ -296,27 +297,26 @@ function addMessage(sender, text) {
   chatArea.appendChild(div);
   chatArea.scrollTop = chatArea.scrollHeight;
 }
-
 sendBtn.onclick = async () => {
   const msg = userInput.value.trim();
   if (!msg) return;
 
   addMessage("You", msg);
   userInput.value = "";
+
+  const messageArea = document.getElementById("messageArea");
+  messageArea.style.display = "flex";
+
   const welcomeSection = document.getElementById("welcomeSection");
+  if (welcomeSection && !welcomeSection.classList.contains("hide")) {
+    welcomeSection.classList.add("hide");
+    setTimeout(() => {
+      welcomeSection.style.display = "none";
+    }, 500);
+  }
 
-if (welcomeSection && !welcomeSection.classList.contains("hide")) {
-  welcomeSection.classList.add("hide");
-
-  setTimeout(() => {
-    welcomeSection.style.display = "none";
-   chatArea.style.display = "flex";    
-  }, 500);
-}  
-try {
-    const res = await fetch(
-      "https://restless-cherry-9f98.jeeshucoder.workers.dev"
-    );
+  try {
+    const res = await fetch("https://restless-cherry-9f98.jeeshucoder.workers.dev");
     const text = await res.text();
     addMessage("AI", text);
   } catch (e) {
