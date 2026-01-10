@@ -56,20 +56,19 @@
      pointer-events: none;
    }      
   #messageArea {
-  display: flex;
-}
+  display: none; /* start me hide */
   flex-direction: column;
   gap: 10px;
   width: 100%;
   max-width: 650px;
-  margin: 20px auto 90px;
+  margin: 20px auto 120px;
 }
 
-/* USER MESSAGE */
+/* USER (right) */
 .user-bubble {
   align-self: flex-end;
   background: #4f46e5;
-  color: white;
+  color: #fff;
   padding: 10px 14px;
   border-radius: 16px 16px 4px 16px;
   max-width: 75%;
@@ -77,7 +76,7 @@
   animation: slideUp 0.25s ease;
 }
 
-/* AI MESSAGE */
+/* AI (left) */
 .ai-bubble {
   align-self: flex-start;
   background: #333;
@@ -89,7 +88,6 @@
   animation: slideUp 0.25s ease;
 }
 
-/* animation */
 @keyframes slideUp {
   from {
     transform: translateY(8px);
@@ -97,8 +95,9 @@
   }
   to {
     transform: translateY(0);
-    opacity: 1;      
- }
+    opacity: 1;
+  }
+}
 /* --- Footer & Plus Menu --- */
         .footer-area { position: fixed; bottom: 20px; width: 100%; display: flex; flex-direction: column; align-items: center; padding: 0 15px; z-index: 1000; }
         .chat-card { width: 100%; max-width: 600px; background: #1e1e1e; border-radius: 28px; padding: 15px; border: 1px solid #333; }
@@ -150,6 +149,7 @@
 </header>
    <main class="content" id="mainContent">
         <div id="welcomeSection">
+            <div id="messageArea"></div>
             <h1 class="title">Welcome To Jeeshu Ai</h1>
             <div class="feature-box">
                 <div class="card">✨ Image Generate</div>
@@ -288,8 +288,11 @@ onAuthStateChanged(auth, (user) => {
     userName.innerText = user.displayName;
   }
 });
+const sendBtn = document.getElementById("sendBtn");
+const userInput = document.getElementById("userInput");
+const chatArea = document.getElementById("messageArea");
+const welcomeSection = document.getElementById("welcomeSection");
 
-/* ================= CHAT UI ================= */
 function addMessage(sender, text) {
   const div = document.createElement("div");
   div.className = sender === "You" ? "user-bubble" : "ai-bubble";
@@ -297,26 +300,25 @@ function addMessage(sender, text) {
   chatArea.appendChild(div);
   chatArea.scrollTop = chatArea.scrollHeight;
 }
+
 sendBtn.onclick = async () => {
   const msg = userInput.value.trim();
   if (!msg) return;
 
+  /* show chat + hide welcome */
+  chatArea.style.display = "flex";
+  if (welcomeSection) {
+    welcomeSection.classList.add("hide");
+    setTimeout(() => welcomeSection.style.display = "none", 400);
+  }
+
   addMessage("You", msg);
   userInput.value = "";
 
-  const messageArea = document.getElementById("messageArea");
-  messageArea.style.display = "flex";
-
-  const welcomeSection = document.getElementById("welcomeSection");
-  if (welcomeSection && !welcomeSection.classList.contains("hide")) {
-    welcomeSection.classList.add("hide");
-    setTimeout(() => {
-      welcomeSection.style.display = "none";
-    }, 500);
-  }
-
   try {
-    const res = await fetch("https://restless-cherry-9f98.jeeshucoder.workers.dev");
+    const res = await fetch(
+      "https://restless-cherry-9f98.jeeshucoder.workers.dev"
+    );
     const text = await res.text();
     addMessage("AI", text);
   } catch (e) {
