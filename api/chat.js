@@ -5,7 +5,6 @@ export default async function handler(req, res) {
 
   try {
     const { message } = req.body;
-
     if (!message) {
       return res.status(400).json({ error: "Message is required" });
     }
@@ -27,14 +26,16 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
+    // 🔥 SAFE GROK PARSING
     const reply =
       data?.choices?.[0]?.message?.content ||
       data?.choices?.[0]?.text ||
-      "No reply from AI";
+      data?.output_text ||
+      "Jeeshu AI is thinking…";
 
     res.status(200).json({ reply });
 
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 }
