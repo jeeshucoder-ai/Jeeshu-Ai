@@ -20,21 +20,29 @@ export default async function handler(req, res) {
         messages: [
           { role: "system", content: "You are Jeeshu AI, a helpful assistant." },
           { role: "user", content: message }
-        ],
-        temperature: 0.7
+        ]
       })
     });
 
-    const data = await response.json();
+    const raw = await response.text();
+
+    // 🔥 DEBUG LOG
+    console.log("RAW GROK RESPONSE:", raw);
+
+    let data;
+    try {
+      data = JSON.parse(raw);
+    } catch {
+      return res.status(500).json({ reply: "Invalid AI response" });
+    }
 
     const reply =
-      data?.choices?.[0]?.message?.content ||
-      data?.choices?.[0]?.delta?.content ||
-      "No reply from Jeeshu AI";
+      data?.choices?.[0]?.message?.content ??
+      "Grok API connected, but no reply (credit / permission issue)";
 
     res.status(200).json({ reply });
 
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ reply: "Server error: " + err.message });
   }
 }
