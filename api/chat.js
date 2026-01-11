@@ -26,11 +26,13 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
-  const reply =
-  data?.choices?.[0]?.message?.content ||
-  data?.choices?.[0]?.text ||
-  "No reply from AI
-  res.status(200).json({ reply });
+
+    const reply =
+      data?.choices?.[0]?.message?.content ||
+      data?.choices?.[0]?.text ||
+      "No reply from AI";
+
+    res.status(200).json({ reply });
 
   } catch (error) {
     res.status(500).json({ error: error.message });
