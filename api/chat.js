@@ -16,11 +16,12 @@ export default async function handler(req, res) {
         "Authorization": `Bearer ${process.env.GROK_API_KEY}`
       },
       body: JSON.stringify({
-        model: "grok-2-latest",
+        model: "grok-beta",
         messages: [
           { role: "system", content: "You are Jeeshu AI, a helpful assistant." },
           { role: "user", content: message }
-        ]
+        ],
+        temperature: 0.7
       })
     });
 
@@ -28,14 +29,12 @@ export default async function handler(req, res) {
 
     const reply =
       data?.choices?.[0]?.message?.content ||
+      data?.choices?.[0]?.delta?.content ||
       "No reply from Jeeshu AI";
 
-    return res.status(200).json({ reply });
+    res.status(200).json({ reply });
 
-  } catch (error) {
-    return res.status(500).json({
-      reply: "Server error from Jeeshu AI",
-      error: error.message
-    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 }
