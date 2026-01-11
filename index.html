@@ -198,119 +198,86 @@
             <button class="social-btn"><i class="fas fa-envelope"></i> Continue with Email</button>
         </div>
     </div> 
- <script type="module">
-/* ================= FIREBASE ================= */
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import {
-  getAuth,
-  signInWithPopup,
-  GoogleAuthProvider,
-  onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyAz5Ki2foz_6VvumqQDnYKpByDi9FsrjD4",
-  authDomain: "jeeshu-ai-f2673.firebaseapp.com",
-  projectId: "jeeshu-ai-f2673",
-  storageBucket: "jeeshu-ai-f2673.appspot.com",
-  messagingSenderId: "721216244975",
-  appId: "1:721216244975:web:d9e5dcb96ada3339981f1a"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
-
-/* ================= ELEMENTS ================= */
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
 const sidebar = document.getElementById("sidebar");
-const overlay = document.getElementById("overlay");
-const menuToggle = document.getElementById("menuToggle");
+  const overlay = document.getElementById("overlay");
+  const menuToggle = document.getElementById("menuToggle");
+  const plusBtn = document.getElementById("plusBtn");
+  const plusMenu = document.getElementById("plusMenu");
+  const webToggle = document.getElementById("webToggle");
 
-const plusBtn = document.getElementById("plusBtn");
-const plusMenu = document.getElementById("plusMenu");
-const webToggle = document.getElementById("webToggle");
+  const openLogin = document.getElementById("openLogin");
+  const closeLogin = document.getElementById("closeLogin");
+  const loginOverlay = document.getElementById("loginOverlay");
 
-const openLogin = document.getElementById("openLogin");
-const closeLogin = document.getElementById("closeLogin");
-const loginOverlay = document.getElementById("loginOverlay");
-const googleBtn = document.getElementById("googleLoginBtn");
+  const sendBtn = document.getElementById("sendBtn");
+  const userInput = document.getElementById("userInput");
+  const chatArea = document.getElementById("messageArea");
+  const welcomeSection = document.getElementById("welcomeSection");
 
-const sendBtn = document.getElementById("sendBtn");
-const userInput = document.getElementById("userInput");
-const chatArea = document.getElementById("messageArea");
-const welcomeSection = document.getElementById("welcomeSection");
+  // MENU
+  menuToggle.onclick = () => {
+    sidebar.classList.add("active");
+    overlay.classList.add("active");
+  };
 
-/* ================= SIDEBAR ================= */
-menuToggle.onclick = () => {
-  sidebar.classList.add("active");
-  overlay.classList.add("active");
-};
+  overlay.onclick = () => {
+    sidebar.classList.remove("active");
+    overlay.classList.remove("active");
+  };
 
-overlay.onclick = () => {
-  sidebar.classList.remove("active");
-  overlay.classList.remove("active");
-};
+  // PLUS MENU
+  plusBtn.onclick = (e) => {
+    e.stopPropagation();
+    plusMenu.classList.toggle("active");
+  };
 
-/* ================= PLUS MENU ================= */
-plusBtn.onclick = (e) => {
-  e.stopPropagation();
-  plusMenu.classList.toggle("active");
-};
+  document.addEventListener("click", () => {
+    plusMenu.classList.remove("active");
+  });
 
-document.addEventListener("click", () => {
-  plusMenu.classList.remove("active");
-});
+  // LOGIN
+  openLogin.onclick = () => loginOverlay.classList.add("active");
+  closeLogin.onclick = () => loginOverlay.classList.remove("active");
 
-/* ================= WEB SEARCH ================= */
-webToggle.onclick = (e) => {
-  e.stopPropagation();
-  webToggle.classList.toggle("active");
-};
-
-/* ================= LOGIN ================= */
-openLogin.onclick = () => loginOverlay.classList.add("active");
-closeLogin.onclick = () => loginOverlay.classList.remove("active");
-
-googleBtn.onclick = () => {
-  signInWithPopup(auth, provider)
-    .then(() => loginOverlay.classList.remove("active"))
-    .catch(err => alert(err.message));
-};
-
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    openLogin.style.display = "none";
+  // CHAT UI
+  function addMessage(sender, text) {
+    const div = document.createElement("div");
+    div.className = sender === "You" ? "user-bubble" : "ai-bubble";
+    div.innerText = text;
+    chatArea.appendChild(div);
+    chatArea.scrollTop = chatArea.scrollHeight;
   }
-});
-function addMessage(sender, text) {
-  ...
-}
-async function sendMessage() {
-  const message = userInput.value.trim();
-  if (!message) return;
 
-  addMessage("You", message);
-  userInput.value = "";
+  async function sendMessage() {
+    const msg = userInput.value.trim();
+    if (!msg) return;
 
-  try {
-    const res = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message })
-    });
+    addMessage("You", msg);
+    userInput.value = "";
 
-    const data = await res.json();
-    addMessage("AI", data.reply || "No reply");
+    welcomeSection?.classList.add("hide");
+    chatArea.style.display = "flex";
 
-  } catch (err) {
-    addMessage("AI", "Server error 😢");
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: msg })
+      });
+
+      const data = await res.json();
+      addMessage("AI", data.reply || "No reply");
+    } catch {
+      addMessage("AI", "Server error 😢");
+    }
   }
-}
+  sendBtn.onclick = sendMessage;
+  userInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") sendMessage();
+  });
 
-sendBtn.onclick = sendMessage;
-
-userInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") sendMessage();
 });
 </script>
 
