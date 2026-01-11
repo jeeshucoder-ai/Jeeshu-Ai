@@ -26,16 +26,16 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    // 🔥 SAFE GROK PARSING
     const reply =
       data?.choices?.[0]?.message?.content ||
-      data?.choices?.[0]?.text ||
-      data?.output_text ||
-      "Jeeshu AI is thinking…";
+      "No reply from Jeeshu AI";
 
-    res.status(200).json({ reply });
+    return res.status(200).json({ reply });
 
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    return res.status(500).json({
+      reply: "Server error from Jeeshu AI",
+      error: error.message
+    });
   }
 }
