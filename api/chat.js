@@ -1,14 +1,10 @@
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({ reply: "Method not allowed" });
   }
 
   try {
     const { message } = req.body;
-
-    if (!message) {
-      return res.status(400).json({ reply: "Message empty hai 😅" });
-    }
 
     const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
       method: "POST",
@@ -19,7 +15,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: "deepseek-chat",
         messages: [
-          { role: "system", content: "You are Jeeshu AI, a helpful Hindi-English assistant." },
+          { role: "system", content: "You are Jeeshu AI, a friendly Hindi-English assistant." },
           { role: "user", content: message }
         ]
       })
@@ -27,13 +23,16 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
+    console.log("DEEPSEEK RESPONSE:", data);
+
     const reply =
       data?.choices?.[0]?.message?.content ||
-      "Jeeshu soch raha hai 🤔 (no reply)";
+      data?.choices?.[0]?.text ||
+      "Jeeshu thoda confuse ho gaya 😅";
 
-    res.status(200).json({ reply });
+    return res.status(200).json({ reply });
 
   } catch (err) {
-    res.status(500).json({ reply: "Server error 😢" });
+    return res.status(500).json({ reply: "Server error 😢" });
   }
 }
