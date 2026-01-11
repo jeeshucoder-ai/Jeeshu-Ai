@@ -1,0 +1,11 @@
+{
+  "name": "jeeshu-ai",
+  "version": "1.0.0",
+  "description": "Jeeshu AI Chat Assistant",
+  "scripts": {
+    "dev": "echo 'Jeeshu AI is running!'"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
