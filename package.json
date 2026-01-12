@@ -1,7 +1,6 @@
 {
   "name": "jeeshu-ai",
   "version": "1.0.0",
-  "main": "api/chat.js",
   "dependencies": {
     "node-fetch": "^2.6.7"
   }
