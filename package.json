@@ -1,10 +1,8 @@
 {
   "name": "jeeshu-ai",
   "version": "1.0.0",
-  "description": "Jeeshu AI Chat Assistant",
   "main": "api/chat.js",
-  "dependencies": {},
-  "engines": {
-    "node": "18.x"
+  "dependencies": {
+    "node-fetch": "^2.6.7"
   }
 }
