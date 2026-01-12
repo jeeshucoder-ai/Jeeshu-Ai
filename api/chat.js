@@ -1,59 +1,48 @@
 export default async function handler(req, res) {
-  // Sirf POST requests allow karo
-  if (req.method !== "POST") {
-    return res.status(405).json({ reply: "Sirf POST method chalta hai" });
-  }
+    // सिर्फ POST रिक्वेस्ट को अनुमति दें
+    if (req.method !== "POST") {
+        return res.status(405).json({ reply: "Error: Only POST requests allowed" });
+    }
 
-  try {
     const { message } = req.body;
 
-    // Check message
     if (!message) {
-      return res.status(400).json({ reply: "Message to likho bhai! 📝" });
+        return res.status(400).json({ reply: "Message तो लिखो भाई! ✍️" });
     }
 
-    // API key environment variable se
     const apiKey = process.env.DEEPSEEK_API_KEY;
 
-    console.log("API Key present:", !!apiKey);
-    console.log("User message:", message);
-
-    // DeepSeek API call
-    const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model: "deepseek-chat",
-        messages: [
-          { role: "system", content: "You are Jeeshu AI, a friendly Hindi-English assistant." },
-          { role: "user", content: message }
-        ],
-        max_tokens: 500
-      })
-    });
-
-    const data = await response.json();
-    console.log("DeepSeek Response:", data);
-
-    // Agar API error
-    if (!response.ok) {
-      console.error("API Error:", data);
-      return res.status(500).json({ 
-        reply: `API Error: ${data.error?.message || "Kuch to gadbad hai"}` 
-      });
+    if (!apiKey) {
+        return res.status(500).json({ reply: "Error: API Key missing in Vercel settings!" });
     }
 
-    // Reply nikalo
-    const reply = data?.choices?.[0]?.message?.content || "Jeeshu soch raha hai... 🤔";
+    try {
+        const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${apiKey}`
+            },
+            body: JSON.stringify({
+                model: "deepseek-chat",
+                messages: [
+                    { role: "system", content: "You are Jeeshu AI, a helpful assistant. Reply in a mix of Hindi and English." },
+                    { role: "user", content: message }
+                ],
+                max_tokens: 500
+            } )
+        });
 
-    // Success reply
-    return res.status(200).json({ reply });
+        const data = await response.json();
 
-  } catch (err) {
-    console.error("Server Error:", err);
-    return res.status(500).json({ reply: "Server error! Thoda wait karo. 😅" });
-  }
+        if (!response.ok) {
+            return res.status(response.status).json({ reply: "API Error: " + (data.error?.message || "Something went wrong") });
+        }
+
+        const aiReply = data.choices?.[0]?.message?.content || "Jeeshu अभी सोच रहा है... 🤔";
+        return res.status(200).json({ reply: aiReply });
+
+    } catch (err) {
+        return res.status(500).json({ reply: "Server Error: Thoda wait karo. 🛠️" });
+    }
 }
