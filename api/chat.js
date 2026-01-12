@@ -11,7 +11,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    // Sahi URL: v1beta version aur gemini-1.5-flash model
+    // DHAYAN DEIN: Yahan 'v1beta' aur 'gemini-1.5-flash' ka sahi path hai
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -25,7 +25,6 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (data.error) {
-      // Agar abhi bhi error aaye toh uska message yahan dikhega
       return res.status(500).json({ reply: "Gemini Error: " + data.error.message });
     }
 
@@ -37,6 +36,6 @@ export default async function handler(req, res) {
     }
 
   } catch (err) {
-    res.status(500).json({ reply: "Server Error: Connection failed!" });
+    res.status(500).json({ reply: "Server Error: Connection failed guru!" });
   }
 }
