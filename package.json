@@ -2,10 +2,13 @@
   "name": "jeeshu-ai",
   "version": "1.0.0",
   "description": "Jeeshu AI Chat Assistant",
+  "main": "api/chat.js",
   "scripts": {
-    "dev": "echo 'Jeeshu AI is running!'"
+    "start": "node api/chat.js"
   },
+  "dependencies": {},
   "engines": {
     "node": "18.x"
   }
 }
+
