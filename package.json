@@ -1,7 +1,13 @@
+
 {
-  "name": "jeeshu-ai",
+  "name": "your-project-name",
   "version": "1.0.0",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
   "dependencies": {
-    "node-fetch": "^2.6.7"
+    "axios": "^1.6.0"
   }
 }
