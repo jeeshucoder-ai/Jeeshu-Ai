@@ -1,34 +1,38 @@
-
-const axios = require("axios");
-
 export default async function handler(req, res) {
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed" });
+    return res.status(405).json({ reply: "Only POST allowed" });
   }
 
-  const API_KEY = process.env.GEMINI_API_KEY;  // Environment variable से API key लें
-  const BASE_URL = 'https://api.generativelanguage.googleapis.com/v1beta';
+  const { message } = req.body;
+  const apiKey = process.env.GEMINI_API_KEY;
 
   try {
-    // पहले models list करें (optional, लेकिन recommended)
-    const modelsResponse = await axios.get(`${BASE_URL}/models`, {
-      headers: { 'Authorization': `Bearer ${API_KEY}` }
+    // Sabse stable URL format for 2026
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{
+          parts: [{ text: message }]
+        }]
+      }),
     });
-    console.log('Available Models:', modelsResponse.data);
 
-    // अब content generate करें (example model: gemini-1.5-flash, आप list से change करें)
-    const modelName = 'gemini-1.5-flash';  // Valid model name use करें
-    const prompt = req.body.prompt || 'Hello, tell me about AI.';  // Request से prompt लें
+    const data = await response.json();
 
-    const generateResponse = await axios.post(
-      `${BASE_URL}/models/${modelName}:generateContent`,
-      { prompt: { text: prompt } },
-      { headers: { 'Authorization': `Bearer ${API_KEY}` } }
-    );
+    // Agar model nahi mil raha to ye error handle karega
+    if (data.error) {
+      return res.status(500).json({ reply: "Gemini Error: " + data.error.message });
+    }
 
-    res.status(200).json({ response: generateResponse.data });
-  } catch (error) {
-    console.error('Error:', error.response ? error.response.data : error.message);
-    res.status(500).json({ error: 'API call failed' });
+    if (data.candidates && data.candidates[0].content) {
+      const aiReply = data.candidates[0].content.parts[0].text;
+      res.status(200).json({ reply: aiReply });
+    } else {
+      res.status(200).json({ reply: "Jeeshu abhi reply nahi de pa raha hai." });
+    }
+
+  } catch (err) {
+    res.status(500).json({ reply: "Server Error: Connection Failed!" });
   }
 }
