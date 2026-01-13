@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   try {
     let context = "";
     
-    // Web Search Logic
+    // 1. Web Search (Simple & Fast)
     if (tavilyKey) {
       try {
         const searchRes = await fetch("https://api.tavily.com/search", {
@@ -18,15 +18,18 @@ export default async function handler(req, res) {
         });
         const searchData = await searchRes.json();
         if (searchData.results) context = searchData.results[0].content;
-      } catch (e) {}
+      } catch (e) {
+        console.log("Search skipped");
+      }
     }
 
     const finalPrompt = context 
       ? `Info: ${context}\n\nUser: ${message}\n\nAnswer in Hinglish.`
       : `User: ${message}\n\nAnswer in Hinglish.`;
 
-    // 🚨 DHYAN DEIN: Yahan maine '-exp' laga diya hai. Ye FREE hai.
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiKey}`, {
+    // 🚨 GAME CHANGER: Using 'gemini-flash-latest'
+    // Ye aapki list mein tha aur ye 'Alias' hai jo hamesha working model par point karta hai.
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${geminiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
