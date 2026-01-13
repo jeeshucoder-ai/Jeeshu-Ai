@@ -1,13 +1,16 @@
 export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ reply: "Only POST allowed" });
+  if (req.method !== "POST") {
+    return res.status(405).json({ reply: "Only POST allowed" });
+  }
 
   const { message } = req.body;
   const apiKey = process.env.GEMINI_API_KEY;
 
-  if (!apiKey) return res.status(500).json({ reply: "API Key missing in Vercel Settings!" });
+  if (!apiKey) {
+    return res.status(500).json({ reply: "API Key missing in Vercel!" });
+  }
 
   try {
-    // Ye combination sabse stable hai aapke liye
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -26,6 +29,6 @@ export default async function handler(req, res) {
     res.status(200).json({ reply: aiReply });
 
   } catch (err) {
-    res.status(500).json({ reply: "Server error: Connection fail!" });
+    res.status(500).json({ reply: "Server error: Connection failed!" });
   }
 }
