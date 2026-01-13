@@ -249,29 +249,25 @@ const sidebar = document.getElementById("sidebar");
     chatArea.appendChild(div);
     chatArea.scrollTop = chatArea.scrollHeight;
   }
-  async function sendMessage() {
+    // index.html ke script tag mein ye zaroor check karein
+const sendBtn = document.getElementById("sendBtn");
+const userInput = document.getElementById("userInput");
+
+sendBtn.onclick = async () => {
     const msg = userInput.value.trim();
     if (!msg) return;
-
+    
     addMessage("You", msg);
     userInput.value = "";
 
-    try {
-        // Ye aapke backend (Vercel) ko message bhejta hai
-        const res = await fetch("/api/chat", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: msg }) // 'message' key hi use karein
-        });
+    const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: msg }) 
+    });
+    const data = await res.json();
+    addMessage("AI", data.reply || "No reply");
+};
 
-        const data = await res.json();
-        
-        // Agar backend se 'reply' milta hai toh screen par dikhayein
-        addMessage("AI", data.reply || "No reply from Jeeshu");
-    } catch (error) {
-        addMessage("AI", "Server error guru! 🛠️");
-        console.error(error);
-    }
-}
 </script>
 
