@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   try {
     let context = "";
     
-    // 1. Web Search (Agar Key hai toh)
+    // 1. Web Search Logic
     if (tavilyKey) {
       try {
         const searchRes = await fetch("https://api.tavily.com/search", {
@@ -25,13 +25,13 @@ export default async function handler(req, res) {
       }
     }
 
-    // 2. Gemini 2.0 Flash Call (Latest & Best)
+    // 2. Gemini Setup
     const finalPrompt = context 
-      ? `Information: ${context}\n\nUser Question: ${message}\n\nAnswer the user in Hinglish using the information above.`
-      : `User Question: ${message}\n\nAnswer in Hinglish (mix of Hindi and English).`;
+      ? `Information: ${context}\n\nUser Question: ${message}\n\nAnswer in Hinglish.`
+      : `User Question: ${message}\n\nAnswer in Hinglish.`;
 
-    // 🚨 Yahan humne aapki list se 'gemini-2.0-flash' chuna hai
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`, {
+    // 🚨 FIX: Using 'gemini-2.0-flash-exp' (Ye Experimental version Free hota hai)
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -41,7 +41,7 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    // Error checking
+    // Error Handling
     if (data.error) {
       return res.status(200).json({ reply: "❌ Error: " + data.error.message });
     }
