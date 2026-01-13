@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   try {
     let context = "";
     
-    // 1. Web Search Logic
+    // Web Search Logic
     if (tavilyKey) {
       try {
         const searchRes = await fetch("https://api.tavily.com/search", {
@@ -17,20 +17,15 @@ export default async function handler(req, res) {
           body: JSON.stringify({ api_key: tavilyKey, query: message, max_results: 1 })
         });
         const searchData = await searchRes.json();
-        if (searchData.results) {
-          context = searchData.results[0].content;
-        }
-      } catch (e) {
-        console.log("Search skipped");
-      }
+        if (searchData.results) context = searchData.results[0].content;
+      } catch (e) {}
     }
 
-    // 2. Gemini Setup
     const finalPrompt = context 
-      ? `Information: ${context}\n\nUser Question: ${message}\n\nAnswer in Hinglish.`
-      : `User Question: ${message}\n\nAnswer in Hinglish.`;
+      ? `Info: ${context}\n\nUser: ${message}\n\nAnswer in Hinglish.`
+      : `User: ${message}\n\nAnswer in Hinglish.`;
 
-    // 🚨 FIX: Using 'gemini-2.0-flash-exp' (Ye Experimental version Free hota hai)
+    // 🚨 DHYAN DEIN: Yahan maine '-exp' laga diya hai. Ye FREE hai.
     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${geminiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -41,9 +36,8 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    // Error Handling
     if (data.error) {
-      return res.status(200).json({ reply: "❌ Error: " + data.error.message });
+      return res.status(200).json({ reply: "❌ Google Error: " + data.error.message });
     }
 
     const aiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Jeeshu soch raha hai...";
