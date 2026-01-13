@@ -1,44 +1,33 @@
+const axios = require('axios');
+
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ reply: "POST request bhejo guru!" });
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { message } = req.body;
-  const apiKey = process.env.GEMINI_API_KEY;
+  const API_KEY = process.env.GEMINI_API_KEY;  // Environment variable से API key लें
+  const BASE_URL = 'https://api.generativelanguage.googleapis.com/v1beta1';
 
   try {
-    // Sabse latest aur universal URL 'gemini-1.5-flash-latest'
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: `You are Jeeshu AI. User message: ${message}` }] }]
-      }),
+    // पहले models list करें (optional, लेकिन recommended)
+    const modelsResponse = await axios.get(`${BASE_URL}/models`, {
+      headers: { 'Authorization': `Bearer ${API_KEY}` }
     });
+    console.log('Available Models:', modelsResponse.data);
 
-    const data = await response.json();
+    // अब content generate करें (example model: text-bison-001, आप list से change करें)
+    const modelName = 'models/text-bison-001';  // Valid model name use करें
+    const prompt = req.body.prompt || 'Hello, tell me about AI.';  // Request से prompt लें
 
-    if (data.error) {
-      // Agar ye fail hua, toh hum ek backup model try karenge (Gemini Pro)
-      const backupResponse = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: message }] }]
-        }),
-      });
-      const backupData = await backupResponse.json();
-      
-      if (backupData.error) {
-        return res.status(500).json({ reply: "Gemini Error: " + backupData.error.message });
-      }
-      return res.status(200).json({ reply: backupData.candidates[0].content.parts[0].text });
-    }
+    const generateResponse = await axios.post(
+      `${BASE_URL}/models/${modelName}:generateContent`,
+      { prompt: { text: prompt } },
+      { headers: { 'Authorization': `Bearer ${API_KEY}` } }
+    );
 
-    const aiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Jeeshu abhi busy hai...";
-    res.status(200).json({ reply: aiReply });
-
-  } catch (err) {
-    res.status(500).json({ reply: "Server error: Network ka chakkar hai!" });
+    res.status(200).json({ response: generateResponse.data });
+  } catch (error) {
+    console.error('Error:', error.response ? error.response.data : error.message);
+    res.status(500).json({ error: 'API call failed' });
   }
 }
