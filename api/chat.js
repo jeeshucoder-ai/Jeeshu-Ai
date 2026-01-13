@@ -8,7 +8,7 @@ export default async function handler(req, res) {
   try {
     let context = "";
     
-    // 1. Web Search (Simple Logic)
+    // 1. Web Search (Agar Key hai toh)
     if (tavilyKey) {
       try {
         const searchRes = await fetch("https://api.tavily.com/search", {
@@ -17,42 +17,33 @@ export default async function handler(req, res) {
           body: JSON.stringify({ api_key: tavilyKey, query: message, max_results: 1 })
         });
         const searchData = await searchRes.json();
-        if (searchData.results) context = searchData.results[0].content;
-      } catch (e) {} 
+        if (searchData.results) {
+          context = searchData.results[0].content;
+        }
+      } catch (e) {
+        console.log("Search skipped");
+      }
     }
 
-    // 2. Gemini ko call karein (Standard Flash Model)
-    // Dhyan dein: Kabhi kabhi 'v1beta' ki jagah 'v1' better chalta hai
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+    // 2. Gemini 2.0 Flash Call (Latest & Best)
+    const finalPrompt = context 
+      ? `Information: ${context}\n\nUser Question: ${message}\n\nAnswer the user in Hinglish using the information above.`
+      : `User Question: ${message}\n\nAnswer in Hinglish (mix of Hindi and English).`;
+
+    // 🚨 Yahan humne aapki list se 'gemini-2.0-flash' chuna hai
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: context ? `Context: ${context}\nUser: ${message}` : message }] }]
+        contents: [{ parts: [{ text: finalPrompt }] }]
       }),
     });
 
     const data = await response.json();
 
-    // 🚨 DOCTOR MODE: Agar Error aaya, toh Models ki List mangwao
+    // Error checking
     if (data.error) {
-      console.log("Error details:", data.error); // Vercel Logs ke liye
-      
-      // Google se pucho: "Tere paas kya hai?"
-      const listReq = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${geminiKey}`);
-      const listData = await listReq.json();
-      
-      let availableModels = "List nahi mili";
-      if (listData.models) {
-        // Sirf wahi models dikhao jo Chat kar sakte hain
-        availableModels = listData.models
-          .filter(m => m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent"))
-          .map(m => m.name.replace("models/", ""))
-          .join(", ");
-      }
-
-      return res.status(200).json({ 
-        reply: `❌ Model Fail! \n\nGoogle ke paas sirf ye models hain (Inme se koi ek chunenge):\n👇\n${availableModels}` 
-      });
+      return res.status(200).json({ reply: "❌ Error: " + data.error.message });
     }
 
     const aiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Jeeshu soch raha hai...";
