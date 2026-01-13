@@ -249,7 +249,6 @@ const sidebar = document.getElementById("sidebar");
     chatArea.appendChild(div);
     chatArea.scrollTop = chatArea.scrollHeight;
   }
-
   async function sendMessage() {
     const msg = userInput.value.trim();
     if (!msg) return;
@@ -257,27 +256,22 @@ const sidebar = document.getElementById("sidebar");
     addMessage("You", msg);
     userInput.value = "";
 
-    welcomeSection?.classList.add("hide");
-    chatArea.style.display = "flex";
-
     try {
-      const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: msg })
-      });
+        // Ye aapke backend (Vercel) ko message bhejta hai
+        const res = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: msg }) // 'message' key hi use karein
+        });
 
-      const data = await res.json();
-      addMessage("AI", data.reply || "No reply");
-    } catch {
-      addMessage("AI", "Server error 😢");
+        const data = await res.json();
+        
+        // Agar backend se 'reply' milta hai toh screen par dikhayein
+        addMessage("AI", data.reply || "No reply from Jeeshu");
+    } catch (error) {
+        addMessage("AI", "Server error guru! 🛠️");
+        console.error(error);
     }
-  }
-  sendBtn.onclick = sendMessage;
-  userInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") sendMessage();
-  });
-
-});
+}
 </script>
 
