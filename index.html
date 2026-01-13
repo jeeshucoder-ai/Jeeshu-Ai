@@ -199,75 +199,103 @@
         </div>
     </div> 
     <script>
-document.addEventListener("DOMContentLoaded", () => {
-const sidebar = document.getElementById("sidebar");
-  const overlay = document.getElementById("overlay");
-  const menuToggle = document.getElementById("menuToggle");
-  const plusBtn = document.getElementById("plusBtn");
-  const plusMenu = document.getElementById("plusMenu");
-  const webToggle = document.getElementById("webToggle");
-
-  const openLogin = document.getElementById("openLogin");
-  const closeLogin = document.getElementById("closeLogin");
-  const loginOverlay = document.getElementById("loginOverlay");
-
-  const sendBtn = document.getElementById("sendBtn");
-  const userInput = document.getElementById("userInput");
-  const chatArea = document.getElementById("messageArea");
-  const welcomeSection = document.getElementById("welcomeSection");
-
-  // MENU
-  menuToggle.onclick = () => {
-    sidebar.classList.add("active");
-    overlay.classList.add("active");
-  };
-
-  overlay.onclick = () => {
-    sidebar.classList.remove("active");
-    overlay.classList.remove("active");
-  };
-
-  // PLUS MENU
-  plusBtn.onclick = (e) => {
-    e.stopPropagation();
-    plusMenu.classList.toggle("active");
-  };
-
-  document.addEventListener("click", () => {
-    plusMenu.classList.remove("active");
-  });
-
-  // LOGIN
-  openLogin.onclick = () => loginOverlay.classList.add("active");
-  closeLogin.onclick = () => loginOverlay.classList.remove("active");
-
-  // CHAT UI
-  function addMessage(sender, text) {
-    const div = document.createElement("div");
-    div.className = sender === "You" ? "user-bubble" : "ai-bubble";
-    div.innerText = text;
-    chatArea.appendChild(div);
-    chatArea.scrollTop = chatArea.scrollHeight;
-  }
-    // index.html ke script tag mein ye zaroor check karein
-const sendBtn = document.getElementById("sendBtn");
-const userInput = document.getElementById("userInput");
-
-sendBtn.onclick = async () => {
-    const msg = userInput.value.trim();
-    if (!msg) return;
+ // 1. Elements ko pakadna (IDs check kar lein)
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
+    const menuToggle = document.getElementById("menuToggle"); // Hamburger Menu
+    const plusBtn = document.getElementById("plusBtn");       // Plus (+) Button
+    const plusMenu = document.getElementById("plusMenu");     // Plus ka Menu
+    const webToggle = document.getElementById("webToggle");   // Web Search Button
     
-    addMessage("You", msg);
-    userInput.value = "";
+    const sendBtn = document.getElementById("sendBtn");       // Send Arrow
+    const userInput = document.getElementById("userInput");   // Text Area
+    const chatArea = document.getElementById("messageArea");  // Chat Box
+    const welcomeSection = document.getElementById("welcomeSection");
 
-    const res = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: msg }) 
-    });
-    const data = await res.json();
-    addMessage("AI", data.reply || "No reply");
-};
+    // 2. Sidebar (Menu) Button Logic
+    function toggleMenu() {
+        sidebar.classList.toggle("active");
+        overlay.classList.toggle("active");
+    }
+    // Agar button aur overlay maujood hain tabhi click kaam karega
+    if(menuToggle) menuToggle.addEventListener("click", toggleMenu);
+    if(overlay) overlay.addEventListener("click", toggleMenu);
 
+    // 3. Plus (+) Menu Logic
+    if(plusBtn && plusMenu) {
+        plusBtn.addEventListener("click", (e) => {
+            e.stopPropagation(); // Menu turant band na ho
+            plusMenu.classList.toggle("active");
+        });
+        // Kahin aur click karne par menu band ho jaye
+        document.addEventListener("click", () => plusMenu.classList.remove("active"));
+    }
+
+    // 4. Web Search Toggle (Sirf Visual ke liye abhi)
+    if(webToggle) {
+        webToggle.addEventListener("click", () => {
+            webToggle.classList.toggle("active");
+            alert("Web Search Mode: " + (webToggle.classList.contains("active") ? "ON 🌐" : "OFF"));
+        });
+    }
+
+    // 5. Message Bhejne ka Asli Logic (Send Button)
+    async function sendMessage() {
+        const msg = userInput.value.trim();
+        if (!msg) return;
+
+        // User ka message screen par layein
+        addMessage("You", msg);
+        userInput.value = "";
+        
+        // Welcome screen hatayein
+        if(welcomeSection) welcomeSection.style.display = "none";
+        chatArea.style.display = "flex";
+
+        try {
+            // Backend se baat karein
+            const res = await fetch("/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: msg }) 
+            });
+
+            const data = await res.json();
+            addMessage("AI", data.reply || "No reply form Jeeshu");
+            
+        } catch (error) {
+            addMessage("AI", "Server Error Guru! 🛠️ Internet check karo.");
+        }
+    }
+
+    // Helper: Screen par message dikhane ke liye
+    function addMessage(sender, text) {
+        const div = document.createElement("div");
+        div.className = sender === "You" ? "user-bubble" : "ai-bubble";
+        div.innerText = text; // Markdown baad mein lagayenge
+        
+        // CSS Style (Simple)
+        div.style.padding = "10px 15px";
+        div.style.margin = "5px";
+        div.style.borderRadius = "15px";
+        div.style.maxWidth = "80%";
+        div.style.alignSelf = sender === "You" ? "flex-end" : "flex-start";
+        div.style.background = sender === "You" ? "#4f46e5" : "#333";
+        div.style.color = "#fff";
+
+        chatArea.appendChild(div);
+        chatArea.scrollTop = chatArea.scrollHeight; // Auto scroll down
+    }
+
+    // Send Button Click par
+    if(sendBtn) sendBtn.addEventListener("click", sendMessage);
+
+    // Enter dabane par bhi send ho
+    if(userInput) {
+        userInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter") sendMessage();
+        });
+    }
 </script>
 
+        
