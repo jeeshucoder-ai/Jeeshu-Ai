@@ -1,12 +1,13 @@
-const axios = require('axios');
+
+const axios = require("axios");
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Method not allowed" });
   }
 
   const API_KEY = process.env.GEMINI_API_KEY;  // Environment variable से API key लें
-  const BASE_URL = 'https://api.generativelanguage.googleapis.com/v1beta1';
+  const BASE_URL = 'https://api.generativelanguage.googleapis.com/v1beta';
 
   try {
     // पहले models list करें (optional, लेकिन recommended)
@@ -15,8 +16,8 @@ export default async function handler(req, res) {
     });
     console.log('Available Models:', modelsResponse.data);
 
-    // अब content generate करें (example model: text-bison-001, आप list से change करें)
-    const modelName = 'models/text-bison-001';  // Valid model name use करें
+    // अब content generate करें (example model: gemini-1.5-flash, आप list से change करें)
+    const modelName = 'gemini-1.5-flash';  // Valid model name use करें
     const prompt = req.body.prompt || 'Hello, tell me about AI.';  // Request से prompt लें
 
     const generateResponse = await axios.post(
