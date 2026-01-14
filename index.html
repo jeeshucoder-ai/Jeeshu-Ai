@@ -325,48 +325,68 @@ body {
                 sendBtn.classList.remove("active"); // Dark color
             }
         });
+               // 5. Send Message Logic (Updated for Image & Chat)
+    async function sendMessage() {
+        const msg = userInput.value.trim();
+        // Agar na text hai na file, toh mat bhejo
+        if (!msg && !selectedFile) return;
 
-        // 5. Send Message Logic (Welcome Screen Hide + Fetch)
-        async function sendMessage() {
-            const msg = userInput.value.trim();
-            if (!msg) return;
+        // Welcome screen hatao
+        if (welcomeScreen && welcomeScreen.style.display !== "none") {
+            welcomeScreen.style.display = "none";
+            chatArea.style.display = "flex";
+        }
 
-            // Welcome screen hatao, Chat area dikhao
-            if(welcomeSection.style.display !== "none") {
-                welcomeSection.style.display = "none";
-                chatArea.style.display = "flex";
-            }
+        // UI Reset (Button wapas dark karo)
+        userInput.value = "";
+        userInput.style.height = 'auto';
+        sendBtn.classList.remove("active");
 
+        // 1. User ka Message Screen par dikhao
+        if (selectedFile) {
+            addMessage("You", `[🖼️ Photo] ${msg}`);
+        } else {
             addMessage("You", msg);
-            userInput.value = "";
-            sendBtn.classList.remove("active"); // Reset button color
+        }
 
-            try {
-                const res = await fetch("/api/chat", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ message: msg })
-                });
+        // 2. Request Data Taiyar Karo
+        let bodyData = { message: msg };
 
-                const data = await res.json();
+        // 3. Check Karo: Kya Image Mode On Hai?
+        if (isImageMode && !selectedFile) {
+            // ---> IMAGE GENERATE KARNI HAI
+            bodyData.type = "image_gen"; 
+            addMessage("AI", "🎨 Painting bana raha hoon... (10-20 sec lagenge)");
+        } else {
+            // ---> NORMAL CHAT
+            bodyData.type = "chat";
+        }
+
+        try {
+            // 4. Server Call (Jeeshu ke dimaag tak baat bhejo)
+            const res = await fetch("/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(bodyData)
+            });
+
+            const data = await res.json();
+
+            // 5. Agar Server ne Image bheji hai
+            if (data.image) {
+                // Image ka HTML banao aur dikhao
+                const imgHTML = `<img src="${data.image}" style="width: 100%; border-radius: 10px; margin-top: 5px;">`;
+                addMessage("AI", data.reply + "<br>" + imgHTML);
+            } else {
+                // Normal Text Jawab
                 addMessage("AI", data.reply);
-            } catch (error) {
-                addMessage("AI", "Guru, Internet check karo! 🔴");
             }
-        }
+            
+            // Kaam ho gaya, Image Mode band kar do
+            if(isImageMode) cancelImageMode();
 
-        // 6. Message Display Helper
-        function addMessage(sender, text) {
-            const div = document.createElement("div");
-            div.className = sender === "You" ? "user-message" : "ai-message";
-            div.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
-            chatArea.appendChild(div);
-            chatArea.scrollTop = chatArea.scrollHeight;
+        } catch (error) {
+            addMessage("AI", "Guru, error aa gaya! 🔴 Internet check karo.");
         }
-
-        sendBtn.addEventListener("click", sendMessage);
-        userInput.addEventListener("keypress", (e) => {
-            if (e.key === "Enter") sendMessage();
-        });
+    }       
     </script>
- 
