@@ -55,90 +55,112 @@
      transform: translateY(-30px);
      pointer-events: none;
    }      
-  /* Pura Page Black */
-    body {
-        margin: 0; padding: 0;
-        background-color: #131314; /* Pitch Black */
-        color: #E3E3E3; /* White Text */
-        font-family: sans-serif;
-        display: flex; flex-direction: column;
-        height: 100vh;
-    }
+  /* /* --- DARK THEME --- */
+body {
+    margin: 0; padding: 0;
+    background-color: #131314; /* Pura Black */
+    color: #E3E3E3;
+    font-family: sans-serif;
+    display: flex; flex-direction: column;
+    height: 100vh;
+}
 
-    /* Top Bar */
-    .top-bar {
-        padding: 15px 20px;
-        display: flex; align-items: center;
-        background: #131314;
-        border-bottom: 1px solid #333;
-    }
-    .menu-btn { font-size: 22px; cursor: pointer; color: #E3E3E3; margin-right: 15px; }
+/* Top Bar */
+.top-bar {
+    padding: 15px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 10;
+    background: #131314;
+}
+.menu-btn { font-size: 22px; cursor: pointer; }
+.login-btn { background: #333; padding: 5px 15px; border-radius: 20px; font-size: 14px; }
 
-    /* Chat Area */
-    #messageArea {
-        flex: 1; overflow-y: auto; padding: 20px;
-        display: flex; flex-direction: column; gap: 15px;
-        padding-bottom: 80px; /* Typing area ke liye jagah */
-    }
+/* Chat Area */
+#messageArea {
+    flex: 1; overflow-y: auto; padding: 20px;
+    display: flex; flex-direction: column; gap: 20px;
+    padding-bottom: 100px;
+}
 
-    /* User Message (Right Side) */
-    .user-message {
-        align-self: flex-end;
-        background-color: #282a2c; /* Dark Grey Bubble */
-        color: white;
-        padding: 12px 18px;
-        border-radius: 20px 20px 4px 20px;
-        max-width: 80%;
-        word-wrap: break-word;
-    }
+/* User Message (Right - Dark Box) */
+.user-message {
+    align-self: flex-end;
+    background-color: #282a2c;
+    color: #fff;
+    padding: 12px 18px;
+    border-radius: 20px 20px 4px 20px;
+    max-width: 80%;
+    font-size: 16px;
+}
 
-    /* AI Message (Left Side - No Bubble) */
-    .ai-message {
-        align-self: flex-start;
-        background: transparent;
-        color: #E3E3E3;
-        padding: 10px 5px;
-        max-width: 90%;
-        line-height: 1.5;
-    }
+/* AI Message (Left - TRANSPARENT/NO BOX) */
+.ai-message {
+    align-self: flex-start;
+    background: transparent; /* Box hata diya */
+    color: #E3E3E3;
+    padding: 0;
+    margin-left: 5px;
+    max-width: 95%;
+    font-size: 16px;
+    line-height: 1.5;
+}
 
-    /* --- INPUT AREA (Sudhara hua) --- */
-    .input-area {
-        position: fixed; bottom: 0; left: 0; width: 100%;
-        padding: 15px 20px;
-        background-color: #131314; /* Black Background */
-        display: flex; align-items: center; gap: 10px;
-        box-sizing: border-box;
-    }
+/* Welcome Screen */
+#welcomeScreen {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center; width: 90%;
+    display: flex; flex-direction: column; gap: 20px;
+}
+.grid-container {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+}
+.grid-item {
+    background: #1E1F20; padding: 15px; border-radius: 20px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    font-size: 14px; border: 1px solid #333;
+}
 
-    /* Input Box (Search icon hata diya) */
-    #userInput {
-        flex: 1;
-        background-color: #1E1F20; /* Dark Box */
-        border: 1px solid #333;
-        color: white;
-        padding: 15px 20px;
-        border-radius: 30px;
-        font-size: 16px;
-        outline: none;
-    }
+/* --- BOTTOM BAR --- */
+.input-container {
+    position: fixed; bottom: 0; left: 0; width: 100%;
+    padding: 10px 15px;
+    background: #1E1F20; /* Grey Bar */
+    display: flex; align-items: center; gap: 10px;
+    border-radius: 30px 30px 0 0;
+    margin-bottom: 10px; width: 95%; left: 2.5%; /* Hawa me tairta hua */
+}
 
-    /* Send Button (White & Centered) */
-    #sendBtn {
-        background: transparent;
-        border: none;
-        width: 45px; height: 45px;
-        display: flex; align-items: center; justify-content: center; /* Center Arrow */
-        cursor: pointer;
-    }
-    
-    /* Icon ka color White */
-    #sendBtn i {
-        color: white;
-        font-size: 20px;
-    }
-    
-    /* Sidebar (Menu) */
+/* Gol Buttons (+, Globe, Mic) */
+.icon-btn {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: #2C2C2C; /* Dark Grey */
+    border: none; color: #fff; font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+}
+
+/* Input Field */
+#userInput {
+    flex: 1; background: transparent; border: none;
+    color: white; font-size: 16px; outline: none; padding: 10px;
+}
+
+/* Send Button (Default: Dark) */
+#sendBtn {
+    width: 45px; height: 45px; border-radius: 50%;
+    background: #2C2C2C; /* Pehle Dark rahega */
+    border: none; color: #fff; font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; transition: 0.2s;
+}
+
+/* Jab Type karenge tab ye White ho jayega */
+#sendBtn.active {
+    background: #FFFFFF; /* Pura White */
+    color: #000000; /* Arrow Black */
+ }
+   * Sidebar (Menu) */
     #sidebar {
         position: fixed; left: -250px; top: 0; width: 250px; height: 100%;
         background: #1E1F20; transition: 0.3s; z-index: 1000; padding: 20px;
@@ -260,107 +282,91 @@
         </div>
     </div> 
     <script>
- // 1. Elements ko pakadna (IDs check kar lein)
-    const sidebar = document.getElementById("sidebar");
-    const overlay = document.getElementById("overlay");
-    const menuToggle = document.getElementById("menuToggle"); // Hamburger Menu
-    const plusBtn = document.getElementById("plusBtn");       // Plus (+) Button
-    const plusMenu = document.getElementById("plusMenu");     // Plus ka Menu
-    const webToggle = document.getElementById("webToggle");   // Web Search Button
-    
-    const sendBtn = document.getElementById("sendBtn");       // Send Arrow
-    const userInput = document.getElementById("userInput");   // Text Area
-    const chatArea = document.getElementById("messageArea");  // Chat Box
-    const welcomeSection = document.getElementById("welcomeSection");
+       // Elements Selection
+        const sidebar = document.getElementById("sidebar");
+        const overlay = document.getElementById("overlay");
+        const menuToggle = document.getElementById("menuToggle");
+        const sendBtn = document.getElementById("sendBtn");
+        const userInput = document.getElementById("userInput");
+        const chatArea = document.getElementById("messageArea");
+        const welcomeSection = document.getElementById("welcomeSection");
+        const plusBtn = document.getElementById("plusBtn");
+        const plusMenu = document.getElementById("plusMenu");
+        const webToggle = document.getElementById("webToggle");
 
-    // 2. Sidebar (Menu) Button Logic
-    function toggleMenu() {
-        sidebar.classList.toggle("active");
-        overlay.classList.toggle("active");
-    }
-    // Agar button aur overlay maujood hain tabhi click kaam karega
-    if(menuToggle) menuToggle.addEventListener("click", toggleMenu);
-    if(overlay) overlay.addEventListener("click", toggleMenu);
+        // 1. Sidebar Logic
+        function toggleMenu() {
+            sidebar.classList.toggle("active");
+            overlay.classList.toggle("active");
+        }
+        menuToggle.addEventListener("click", toggleMenu);
+        overlay.addEventListener("click", toggleMenu);
 
-    // 3. Plus (+) Menu Logic
-    if(plusBtn && plusMenu) {
+        // 2. Plus Menu Logic (Screenshots se liya gaya)
         plusBtn.addEventListener("click", (e) => {
             e.stopPropagation(); // Menu turant band na ho
             plusMenu.classList.toggle("active");
         });
-        // Kahin aur click karne par menu band ho jaye
-        document.addEventListener("click", () => plusMenu.classList.remove("active"));
-    }
+        // Kahin aur click karne par Plus Menu band ho jaye
+        document.addEventListener("click", () => {
+            plusMenu.classList.remove("active");
+        });
 
-    // 4. Web Search Toggle (Sirf Visual ke liye abhi)
-    if(webToggle) {
+        // 3. Web Search Toggle Logic
         webToggle.addEventListener("click", () => {
             webToggle.classList.toggle("active");
-            alert("Web Search Mode: " + (webToggle.classList.contains("active") ? "ON 🌐" : "OFF"));
         });
-    }
 
-    // 5. Message Bhejne ka Asli Logic (Send Button)
-    async function sendMessage() {
-        const msg = userInput.value.trim();
-        if (!msg) return;
+        // 4. Send Button Color Change Logic (New Feature)
+        userInput.addEventListener("input", function() {
+            if (this.value.trim().length > 0) {
+                sendBtn.classList.add("active"); // White color
+            } else {
+                sendBtn.classList.remove("active"); // Dark color
+            }
+        });
 
-        // User ka message screen par layein
-        addMessage("You", msg);
-        userInput.value = "";
-        
-        // Welcome screen hatayein
-        if(welcomeSection) welcomeSection.style.display = "none";
-        chatArea.style.display = "flex";
+        // 5. Send Message Logic (Welcome Screen Hide + Fetch)
+        async function sendMessage() {
+            const msg = userInput.value.trim();
+            if (!msg) return;
 
-        try {
-            // Backend se baat karein
-            const res = await fetch("/api/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: msg }) 
-            });
+            // Welcome screen hatao, Chat area dikhao
+            if(welcomeSection.style.display !== "none") {
+                welcomeSection.style.display = "none";
+                chatArea.style.display = "flex";
+            }
 
-            const data = await res.json();
-            addMessage("AI", data.reply || "No reply form Jeeshu");
-            
-        } catch (error) {
-            addMessage("AI", "Server Error Guru! 🛠️ Internet check karo.");
-        }
-    }
+            addMessage("You", msg);
+            userInput.value = "";
+            sendBtn.classList.remove("active"); // Reset button color
 
-    // Helper: Screen par message dikhane ke liye
-        // Message dikhane wala naya function
-    function addMessage(sender, text) {
-        const chatArea = document.getElementById("messageArea");
-        const msgDiv = document.createElement("div");
+            try {
+                const res = await fetch("/api/chat", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: msg })
+                });
 
-        // Class lagao taaki CSS design pakad sake
-        if (sender === "You") {
-            msgDiv.classList.add("user-message"); // Right side
-        } else {
-            msgDiv.classList.add("ai-message");   // Left side
+                const data = await res.json();
+                addMessage("AI", data.reply);
+            } catch (error) {
+                addMessage("AI", "Guru, Internet check karo! 🔴");
+            }
         }
 
-        // Text ko bubbles me dalo
-        // (Markdown hata kar simple text dikha rahe hain taaki error na aaye)
-        msgDiv.innerText = text; 
+        // 6. Message Display Helper
+        function addMessage(sender, text) {
+            const div = document.createElement("div");
+            div.className = sender === "You" ? "user-message" : "ai-message";
+            div.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+            chatArea.appendChild(div);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
 
-        // Chat area me jodo
-        chatArea.appendChild(msgDiv);
-        
-        // Auto-Scroll (Hamesha naye message par focus)
-        chatArea.scrollTop = chatArea.scrollHeight;
-    }
-    // Send Button Click par
-    if(sendBtn) sendBtn.addEventListener("click", sendMessage);
-
-    // Enter dabane par bhi send ho
-    if(userInput) {
+        sendBtn.addEventListener("click", sendMessage);
         userInput.addEventListener("keypress", (e) => {
             if (e.key === "Enter") sendMessage();
         });
-    }
-</script>
-
-        
+    </script>
+ 
