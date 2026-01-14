@@ -3,24 +3,24 @@ export default async function handler(req, res) {
 
   const { message } = req.body;
 
-  // 1. Teeno Keys ki list
+  // 1. Aapki 3 Keys ka 'Power Pack'
   const apiKeys = [
-    process.env.GEMINI_API_KEY, // Purani Key
-    process.env.GEMINI_KEY_2,   // Nayi Key 1
-    process.env.GEMINI_KEY_3    // Nayi Key 2
-  ].filter(k => k); // Jo khali hongi unhe hata dega
+    process.env.GEMINI_API_KEY, // Purani
+    process.env.GEMINI_KEY_2,   // Nayi 1
+    process.env.GEMINI_KEY_3    // Nayi 2
+  ].filter(k => k); 
 
-  // 2. Randomly koi ek key chuno
+  // 2. Random Key Choose Karo
   const randomKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
 
-  if (!randomKey) return res.status(500).json({ reply: "Guru, Keys add nahi huyi hain!" });
+  if (!randomKey) return res.status(500).json({ reply: "Guru, API Keys missing hain!" });
 
   try {
     const now = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
     const tavilyKey = process.env.TAVILY_API_KEY;
 
     let context = "";
-    // Web Search Logic
+    // Web Search
     if (tavilyKey) {
       try {
         const searchRes = await fetch("https://api.tavily.com/search", {
@@ -34,18 +34,19 @@ export default async function handler(req, res) {
 
     // 3. System Instruction
     const systemInstruction = `
-    You are Jeeshu AI, a smart assistant made by Guru.
+    You are Jeeshu AI, a helpful assistant made by Guru.
     Current Date: ${now}.
     Language: Hinglish (Hindi + English).
-    Answer style: Friendly, short and helpful.
+    Style: Short, Friendly and Helpful.
     `;
     
     const finalPrompt = context 
-      ? `${systemInstruction}\n\nSearch Info: ${context}\n\nUser: ${message}` 
+      ? `${systemInstruction}\n\nWeb Info: ${context}\n\nUser: ${message}` 
       : `${systemInstruction}\n\nUser: ${message}`;
 
-    // 4. Model Call (gemini-1.5-flash sabse stable hai)
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${randomKey}`, {
+    // 🚨 FIX: Model Name changed to 'gemini-flash-latest'
+    // Ye naam aapki list me maujood tha, isliye ye 100% chalega.
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${randomKey}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ contents: [{ parts: [{ text: finalPrompt }] }] }),
@@ -54,8 +55,9 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (data.error) {
+      // 429 = Too Many Requests (Traffic Jam)
       if (data.error.message.includes("429") || data.error.message.includes("quota")) {
-         return res.status(200).json({ reply: "Guru, abhi load zyada hai, 10 second baad try karna! 🚦" });
+         return res.status(200).json({ reply: "Guru, abhi traffic zyada hai! 🚦 10 second ruk kar try karo." });
       }
       return res.status(200).json({ reply: "Error: " + data.error.message });
     }
