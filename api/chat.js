@@ -2,14 +2,25 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ reply: "Only POST allowed" });
 
   const { message } = req.body;
-  const geminiKey = process.env.GEMINI_API_KEY;
-  const tavilyKey = process.env.TAVILY_API_KEY;
+
+  // 1. Teeno Keys ki list
+  const apiKeys = [
+    process.env.GEMINI_API_KEY, // Purani Key
+    process.env.GEMINI_KEY_2,   // Nayi Key 1
+    process.env.GEMINI_KEY_3    // Nayi Key 2
+  ].filter(k => k); // Jo khali hongi unhe hata dega
+
+  // 2. Randomly koi ek key chuno
+  const randomKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
+
+  if (!randomKey) return res.status(500).json({ reply: "Guru, Keys add nahi huyi hain!" });
 
   try {
     const now = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
-    
-    // Web Search Logic
+    const tavilyKey = process.env.TAVILY_API_KEY;
+
     let context = "";
+    // Web Search Logic
     if (tavilyKey) {
       try {
         const searchRes = await fetch("https://api.tavily.com/search", {
@@ -21,47 +32,35 @@ export default async function handler(req, res) {
       } catch (e) { console.log("Search skipped"); }
     }
 
-    const systemInstruction = `You are Jeeshu AI. Today's Date: ${now}. Language: Hinglish. Answer short and sweet.`;
-    const finalPrompt = context ? `${systemInstruction}\nInfo: ${context}\nUser: ${message}` : `${systemInstruction}\nUser: ${message}`;
+    // 3. System Instruction
+    const systemInstruction = `
+    You are Jeeshu AI, a smart assistant made by Guru.
+    Current Date: ${now}.
+    Language: Hinglish (Hindi + English).
+    Answer style: Friendly, short and helpful.
+    `;
+    
+    const finalPrompt = context 
+      ? `${systemInstruction}\n\nSearch Info: ${context}\n\nUser: ${message}` 
+      : `${systemInstruction}\n\nUser: ${message}`;
 
-    // 🚨 MASTERMIND LOGIC: 3 Models ki list (Priority wise)
-    const backupModels = [
-      "gemini-2.0-flash-lite-preview-02-05", // Sabse naya aur fast
-      "gemini-2.0-flash-lite",               // Standard Lite
-      "gemini-flash-latest"                  // Old Reliable
-    ];
+    // 4. Model Call (gemini-1.5-flash sabse stable hai)
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${randomKey}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ contents: [{ parts: [{ text: finalPrompt }] }] }),
+    });
 
-    let aiReply = null;
-    let lastError = "";
+    const data = await response.json();
 
-    // Loop chalayenge: Ek fail hua toh dusra try karega
-    for (const model of backupModels) {
-      try {
-        console.log("Trying model:", model); // Logs mein dikhega
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${geminiKey}`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ contents: [{ parts: [{ text: finalPrompt }] }] }),
-        });
-
-        const data = await response.json();
-
-        // Agar safalta mili
-        if (!data.error && data.candidates) {
-          aiReply = data.candidates[0].content.parts[0].text;
-          break; // Loop roko, kaam ho gaya
-        } else {
-          lastError = data.error?.message || "Unknown error";
-        }
-      } catch (err) {
-        lastError = err.message;
+    if (data.error) {
+      if (data.error.message.includes("429") || data.error.message.includes("quota")) {
+         return res.status(200).json({ reply: "Guru, abhi load zyada hai, 10 second baad try karna! 🚦" });
       }
+      return res.status(200).json({ reply: "Error: " + data.error.message });
     }
 
-    if (!aiReply) {
-      return res.status(200).json({ reply: "Abhi Google ke saare servers busy hain Guru! 2 minute chai peekar aana. ☕ (Error: " + lastError + ")" });
-    }
-
+    const aiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Jeeshu soch raha hai...";
     res.status(200).json({ reply: aiReply });
 
   } catch (err) {
