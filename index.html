@@ -282,111 +282,196 @@ body {
         </div>
     </div> 
     <script>
-       // Elements Selection
-        const sidebar = document.getElementById("sidebar");
-        const overlay = document.getElementById("overlay");
-        const menuToggle = document.getElementById("menuToggle");
-        const sendBtn = document.getElementById("sendBtn");
-        const userInput = document.getElementById("userInput");
-        const chatArea = document.getElementById("messageArea");
-        const welcomeSection = document.getElementById("welcomeSection");
-        const plusBtn = document.getElementById("plusBtn");
-        const plusMenu = document.getElementById("plusMenu");
-        const webToggle = document.getElementById("webToggle");
+    // --- 1. SAARE ELEMENTS KO PEHCHANO ---
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
+    const menuToggle = document.getElementById("menuToggle");
+    const sendBtn = document.getElementById("sendBtn");
+    const userInput = document.getElementById("userInput");
+    const chatArea = document.getElementById("messageArea");
+    const welcomeScreen = document.getElementById("welcomeScreen");
+    const uploadBtn = document.getElementById("uploadBtn");
+    const fileInput = document.getElementById("fileInput");
+    const inputContextArea = document.getElementById("inputContextArea");
 
-        // 1. Sidebar Logic
-        function toggleMenu() {
-            sidebar.classList.toggle("active");
-            overlay.classList.toggle("active");
+    // --- 2. ZARURI VARIABLES ---
+    let isImageMode = false; // Kya image banani hai?
+    let selectedFile = null; // Kya photo select ki hai?
+
+    // --- 3. MENU / SIDEBAR LOGIC ---
+    function toggleMenu() {
+        sidebar.classList.toggle("active");
+        overlay.classList.toggle("active");
+    }
+    if(menuToggle) menuToggle.addEventListener("click", toggleMenu);
+    if(overlay) overlay.addEventListener("click", toggleMenu);
+
+    // --- 4. INPUT FIELD MAGIC (Resize & Color) ---
+    userInput.addEventListener("input", function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+        
+        // Agar kuch likha hai to button active (White) karo
+        if (this.value.trim().length > 0) {
+            sendBtn.classList.add("active");
+        } else {
+            sendBtn.classList.remove("active");
         }
-        menuToggle.addEventListener("click", toggleMenu);
-        overlay.addEventListener("click", toggleMenu);
+    });
 
-        // 2. Plus Menu Logic (Screenshots se liya gaya)
-        plusBtn.addEventListener("click", (e) => {
-            e.stopPropagation(); // Menu turant band na ho
-            plusMenu.classList.toggle("active");
-        });
-        // Kahin aur click karne par Plus Menu band ho jaye
-        document.addEventListener("click", () => {
-            plusMenu.classList.remove("active");
-        });
+    // --- 5. FEATURE BUTTONS (Welcome Screen) ---
+    function handleFeature(type) {
+        // Welcome screen chupao
+        if(welcomeScreen) welcomeScreen.style.display = "none";
+        chatArea.style.display = "flex"; // Chat area dikhao
 
-        // 3. Web Search Toggle Logic
-        webToggle.addEventListener("click", () => {
-            webToggle.classList.toggle("active");
-        });
-
-        // 4. Send Button Color Change Logic (New Feature)
-        userInput.addEventListener("input", function() {
-            if (this.value.trim().length > 0) {
-                sendBtn.classList.add("active"); // White color
-            } else {
-                sendBtn.classList.remove("active"); // Dark color
+        if (type === 'image') {
+            // Image Mode ON
+            activateImageMode();
+            addMessage("AI", "Guru, **Image Generation Mode** on hai! 🎨<br>Kaisi photo banani hai? Prompt likho...");
+        } 
+        else if (type === 'location') {
+            // Location Logic
+            addMessage("You", "Location batao 📍");
+             if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition((position) => {
+                    // Coordinates server ko bhejo
+                    sendMessageToServer(`Meri Location: Lat ${position.coords.latitude}, Lon ${position.coords.longitude}. Jagah ka naam batao.`, "chat");
+                }, () => addMessage("AI", "Location permission denied! 🔴"));
             }
+        }
+        else if (type === 'code') {
+            addMessage("AI", "Guru, main ready hoon! Apna code bhejo, main debug kar dunga. 🧠");
+        }
+        else { 
+            addMessage("AI", "Ye feature jald aa raha hai! 🛠️"); 
+        }
+    }
+
+    // --- 6. IMAGE MODE LOGIC ---
+    function activateImageMode() {
+        isImageMode = true;
+        inputContextArea.style.display = "block";
+        inputContextArea.innerHTML = `
+            <div class="mode-badge">
+                <i class="fas fa-magic"></i> Generate Image Mode
+                <span class="badge-close" onclick="cancelImageMode()"><i class="fas fa-times"></i></span>
+            </div>
+        `;
+        userInput.placeholder = "Describe image (e.g., A flying cat)...";
+        userInput.focus();
+    }
+
+    function cancelImageMode() {
+        isImageMode = false;
+        selectedFile = null;
+        inputContextArea.style.display = "none";
+        inputContextArea.innerHTML = "";
+        userInput.placeholder = "Message Jeeshu AI...";
+        fileInput.value = ""; // File clear
+    }
+
+    // --- 7. FILE UPLOAD LOGIC ---
+    if(uploadBtn) {
+        uploadBtn.addEventListener("click", () => fileInput.click());
+    }
+    
+    if(fileInput) {
+        fileInput.addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            selectedFile = file;
+
+            // Preview dikhao
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                inputContextArea.style.display = "block";
+                inputContextArea.innerHTML = `
+                    <div class="image-preview-box">
+                        <img src="${e.target.result}">
+                        <span class="preview-close" onclick="cancelImageMode()">×</span>
+                    </div>
+                `;
+            };
+            reader.readAsDataURL(file);
         });
-               // 5. Send Message Logic (Updated for Image & Chat)
+    }
+
+    // --- 8. SEND MESSAGE (Sabse Main Function) ---
     async function sendMessage() {
         const msg = userInput.value.trim();
-        // Agar na text hai na file, toh mat bhejo
+        // Agar khali hai aur file bhi nahi hai, to mat bhejo
         if (!msg && !selectedFile) return;
 
         // Welcome screen hatao
-        if (welcomeScreen && welcomeScreen.style.display !== "none") {
-            welcomeScreen.style.display = "none";
-            chatArea.style.display = "flex";
-        }
+        if (welcomeScreen) welcomeScreen.style.display = "none";
+        chatArea.style.display = "flex";
 
-        // UI Reset (Button wapas dark karo)
+        // UI Reset
         userInput.value = "";
         userInput.style.height = 'auto';
         sendBtn.classList.remove("active");
 
-        // 1. User ka Message Screen par dikhao
+        // Screen par message dikhao
         if (selectedFile) {
             addMessage("You", `[🖼️ Photo] ${msg}`);
         } else {
             addMessage("You", msg);
         }
 
-        // 2. Request Data Taiyar Karo
-        let bodyData = { message: msg };
-
-        // 3. Check Karo: Kya Image Mode On Hai?
+        // Logic Check: Kya karna hai?
+        let type = "chat";
         if (isImageMode && !selectedFile) {
-            // ---> IMAGE GENERATE KARNI HAI
-            bodyData.type = "image_gen"; 
-            addMessage("AI", "🎨 Painting bana raha hoon... (10-20 sec lagenge)");
-        } else {
-            // ---> NORMAL CHAT
-            bodyData.type = "chat";
+            type = "image_gen"; // Image banani hai
+            addMessage("AI", "🎨 Painting bana raha hoon... (Wait 10s)");
         }
 
+        // Server ko call karo
+        await sendMessageToServer(msg, type);
+
+        // Mode band kar do
+        if(isImageMode) cancelImageMode();
+    }
+
+    // --- 9. SERVER CALL FUNCTION ---
+    async function sendMessageToServer(msg, type) {
         try {
-            // 4. Server Call (Jeeshu ke dimaag tak baat bhejo)
             const res = await fetch("/api/chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(bodyData)
+                body: JSON.stringify({ message: msg, type: type })
             });
 
             const data = await res.json();
 
-            // 5. Agar Server ne Image bheji hai
             if (data.image) {
-                // Image ka HTML banao aur dikhao
-                const imgHTML = `<img src="${data.image}" style="width: 100%; border-radius: 10px; margin-top: 5px;">`;
+                // Agar Image aayi hai
+                const imgHTML = `<img src="${data.image}" style="width: 100%; border-radius: 10px; margin-top: 10px;">`;
                 addMessage("AI", data.reply + "<br>" + imgHTML);
             } else {
-                // Normal Text Jawab
+                // Agar Text aaya hai
                 addMessage("AI", data.reply);
             }
-            
-            // Kaam ho gaya, Image Mode band kar do
-            if(isImageMode) cancelImageMode();
-
         } catch (error) {
-            addMessage("AI", "Guru, error aa gaya! 🔴 Internet check karo.");
+            addMessage("AI", "Guru, Internet ya Server error hai! 🔴");
         }
-    }       
-    </script>
+    }
+
+    // --- 10. MESSAGE DIKHANE KA HELPER ---
+    function addMessage(sender, text) {
+        const div = document.createElement("div");
+        div.className = sender === "You" ? "user-message" : "ai-message";
+        div.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+        chatArea.appendChild(div);
+        chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    // --- 11. BUTTON LISTENERS ---
+    sendBtn.addEventListener("click", sendMessage);
+    userInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault(); // Nayi line mat banao
+            sendMessage(); // Bhejo
+        }
+    });
+</script>
