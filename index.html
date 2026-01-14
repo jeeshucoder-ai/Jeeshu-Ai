@@ -279,30 +279,33 @@ body {
             <button class="social-btn" id="googleLoginBtn"><i class="fab fa-google"></i> Continue with Google</button>
             <button class="social-btn"><i class="fab fa-apple"></i> Continue with Apple</button>
             <button class="social-btn"><i class="fas fa-envelope"></i> Continue with Email</button>
-        </div>
-    </div> 
+         <input type="file" id="fileInput" accept="image/*" style="display: none;">
+<div id="inputContextArea" style="display: none; position: fixed; bottom: 80px; left: 20px; z-index: 100;"></div>
+  </div> 
     <script>
-      / --- 1. SAARE ELEMENTS LAO ---
+    // --- 1. SAARE ELEMENTS LAO (Sahi IDs ke saath) ---
     const sidebar = document.getElementById("sidebar");
     const overlay = document.getElementById("overlay");
     const menuToggle = document.getElementById("menuToggle");
     
-    // Input Area Elements
+    // Aapke HTML ke hisab se sahi IDs
     const sendBtn = document.getElementById("sendBtn");
     const userInput = document.getElementById("userInput");
-    const chatArea = document.getElementById("messageArea");
-    const welcomeScreen = document.getElementById("welcomeScreen");
+    const chatArea = document.getElementById("messageArea"); // Ya 'message-area' check karein
+    const welcomeScreen = document.getElementById("welcomeScreen"); // Ya 'welcome-section'
     
-    // Buttons
-    const uploadBtn = document.getElementById("uploadBtn");
+    // Buttons (Ab sahi IDs match kar rahe hain)
+    const uploadBtn = document.getElementById("plusBtn"); // HTML me id="plusBtn" hai
+    const webBtn = document.getElementById("webToggle");  // HTML me id="webToggle" hai
+    
+    // Ye humne Step 1 me jode hain
     const fileInput = document.getElementById("fileInput");
-    const webBtn = document.getElementById("webBtn");
     const inputContextArea = document.getElementById("inputContextArea");
 
-    // --- 2. VARIABLES (Yaadasht) ---
-    let isImageMode = false;  // Kya image banani hai?
-    let isWebSearch = false;  // Kya internet se dhundna hai?
-    let selectedFile = null;  // Kya koi photo hai?
+    // --- 2. VARIABLES ---
+    let isImageMode = false;
+    let isWebSearch = false;
+    let selectedFile = null;
 
     // --- 3. MENU / SIDEBAR ---
     function toggleMenu() {
@@ -312,39 +315,37 @@ body {
     if(menuToggle) menuToggle.addEventListener("click", toggleMenu);
     if(overlay) overlay.addEventListener("click", toggleMenu);
 
-    // --- 4. FEATURE BUTTONS (Welcome Screen Logic) ---
-    // (HTML me onclick="handleFeature('...')" hona chahiye)
+    // --- 4. WELCOME SCREEN FEATURES ---
     window.handleFeature = function(type) {
-        // Sabse pehle Welcome Screen Hatao
         if(welcomeScreen) welcomeScreen.style.display = "none";
-        if(chatArea) chatArea.style.display = "flex";
-
+        
         if (type === 'image') {
             activateImageMode();
-            addMessage("AI", "🎨 **Image Mode On!**<br>Kaisi photo chahiye? Prompt likho...");
+            addMessage("AI", "🎨 **Image Mode On!**<br>Prompt likho...");
         } 
         else if (type === 'location') {
-            addMessage("You", "Meri Location batao 📍");
+            addMessage("You", "Meri Location?");
              if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition((position) => {
-                    sendMessageToServer(`My Location: Lat ${position.coords.latitude}, Lon ${position.coords.longitude}. Where am I?`, "chat");
+                    sendMessageToServer(`Location: ${position.coords.latitude}, ${position.coords.longitude}`, "chat");
                 }, () => addMessage("AI", "Permission denied! 🔴"));
             }
         }
         else if (type === 'code') {
-            addMessage("AI", "Code bhejo Guru, main debug karta hoon! 💻");
-        }
-        else {
-            addMessage("AI", "Ye feature jald aayega! 🛠️");
+            addMessage("AI", "Code bhejo Guru! 💻");
         }
     }
 
-    // --- 5. INPUT & MODES ---
+    // --- 5. BUTTONS LOGIC ---
     
     // A. Plus Button (Upload)
     if(uploadBtn) {
-        uploadBtn.addEventListener("click", () => fileInput.click());
+        uploadBtn.addEventListener("click", () => {
+            // Agar fileInput nahi mila to error mat do
+            if(fileInput) fileInput.click();
+        });
     }
+
     // File Select Hone Par
     if(fileInput) {
         fileInput.addEventListener("change", (e) => {
@@ -353,88 +354,76 @@ body {
             selectedFile = file;
             
             // Preview Dikhao
-            inputContextArea.style.display = "block";
-            inputContextArea.innerHTML = `
-                <div style="background: #333; padding: 5px; border-radius: 10px; display: inline-block;">
-                    <img src="${URL.createObjectURL(file)}" style="height: 50px; border-radius: 5px;">
-                    <span onclick="clearContext()" style="color: red; cursor: pointer; margin-left: 5px;">✖</span>
-                </div>`;
+            if(inputContextArea) {
+                inputContextArea.style.display = "block";
+                inputContextArea.innerHTML = `
+                    <div style="background: #222; padding: 8px; border-radius: 10px; border: 1px solid #444;">
+                        <span style="color:white; font-size:12px;">🖼️ Image Selected</span>
+                        <span onclick="clearContext()" style="color: #ff4d4d; cursor: pointer; margin-left: 10px; font-weight:bold;">✕</span>
+                    </div>`;
+            }
         });
     }
 
     // B. Globe Button (Web Search)
     if(webBtn) {
         webBtn.addEventListener("click", () => {
-            isWebSearch = !isWebSearch; // Toggle ON/OFF
-            webBtn.style.color = isWebSearch ? "#4facfe" : "white"; // Blue if ON
-            if(isWebSearch) {
-                 addMessage("AI", "🌐 Web Search: <b>ON</b>");
-            } else {
-                 addMessage("AI", "🌐 Web Search: <b>OFF</b>");
-            }
+            isWebSearch = !isWebSearch;
+            // Web Search ka color badlo
+            webBtn.style.color = isWebSearch ? "#4facfe" : "#999"; 
+            addMessage("AI", isWebSearch ? "🌐 Web Search: **ON**" : "🌐 Web Search: **OFF**");
         });
     }
 
     // C. Image Mode Logic
     function activateImageMode() {
         isImageMode = true;
-        inputContextArea.style.display = "block";
-        inputContextArea.innerHTML = `
-            <div style="background: #cce5ff; color: #004085; padding: 5px 10px; border-radius: 15px; font-size: 13px; display: inline-block;">
-                ✨ Image Gen Mode <span onclick="clearContext()" style="cursor: pointer; margin-left: 5px;">✖</span>
-            </div>`;
+        if(inputContextArea) {
+            inputContextArea.style.display = "block";
+            inputContextArea.innerHTML = `
+                <div style="background: #cce5ff; color: #004085; padding: 5px 10px; border-radius: 15px; font-size: 13px;">
+                    ✨ Image Gen Mode <span onclick="clearContext()" style="cursor: pointer; margin-left: 5px; color:red;">✖</span>
+                </div>`;
+        }
     }
 
-    // D. Clear Everything (Cross dabane par)
+    // D. Clear Context
     window.clearContext = function() {
         isImageMode = false;
         selectedFile = null;
-        inputContextArea.style.display = "none";
-        inputContextArea.innerHTML = "";
-        fileInput.value = "";
+        if(inputContextArea) {
+            inputContextArea.style.display = "none";
+            inputContextArea.innerHTML = "";
+        }
+        if(fileInput) fileInput.value = "";
     }
 
-    // E. Input Resize & Button Color
-    userInput.addEventListener("input", function() {
-        this.style.height = 'auto';
-        this.style.height = (this.scrollHeight) + 'px';
-        if (this.value.trim().length > 0) sendBtn.classList.add("active");
-        else sendBtn.classList.remove("active");
-    });
-
-    // --- 6. SEND MESSAGE LOGIC (Sabse Zaruri) ---
+    // --- 6. SEND MESSAGE ---
     async function sendMessage() {
         const msg = userInput.value.trim();
         if (!msg && !selectedFile) return;
 
-        // 1. UI SAFAYI: Welcome screen hatao
         if(welcomeScreen) welcomeScreen.style.display = "none";
-        if(chatArea) chatArea.style.display = "flex";
 
-        // 2. Message Dikhao
+        // User Message
         if (selectedFile) addMessage("You", `[🖼️ Photo] ${msg}`);
         else addMessage("You", msg);
 
-        // 3. Input Reset
         userInput.value = "";
-        userInput.style.height = 'auto';
-        sendBtn.classList.remove("active");
-
-        // 4. Check Mode
+        
+        // Determine Type
         let type = "chat";
         if (isImageMode && !selectedFile) {
             type = "image_gen";
-            addMessage("AI", "🎨 Painting shuru... (Wait karo)");
+            addMessage("AI", "🎨 Painting bana raha hoon...");
         }
 
-        // 5. Server Call
         await sendMessageToServer(msg, type);
 
-        // 6. Reset Mode
         if(isImageMode) clearContext();
     }
 
-    // --- 7. SERVER SE BAAT ---
+    // --- 7. SERVER CALL ---
     async function sendMessageToServer(msg, type) {
         try {
             const res = await fetch("/api/chat", {
@@ -456,21 +445,27 @@ body {
         }
     }
 
-    // --- 8. HELPER (Message Dikhana) ---
+    // --- 8. HELPER ---
     function addMessage(sender, text) {
         const div = document.createElement("div");
-        div.className = sender === "You" ? "user-message" : "ai-message";
+        div.className = sender === "You" ? "user-message" : "ai-message"; // Ensure classes match CSS
+        // Agar CSS me class alag hai to yahan adjust karein (e.g., 'message right', 'message left')
         div.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
         chatArea.appendChild(div);
         chatArea.scrollTop = chatArea.scrollHeight;
     }
 
-    // --- 9. CLICK LISTENERS ---
-    sendBtn.addEventListener("click", sendMessage);
-    userInput.addEventListener("keypress", (e) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });        
- </script>
+    // Listeners
+    if(sendBtn) sendBtn.addEventListener("click", sendMessage);
+    if(userInput) {
+        userInput.addEventListener("keypress", (e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    }
+</script>
+
+      
+ 
