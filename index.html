@@ -283,22 +283,21 @@ body {
 <div id="inputContextArea" style="display: none; position: fixed; bottom: 80px; left: 20px; z-index: 100;"></div>
   </div> 
     <script>
-    // --- 1. SAARE ELEMENTS LAO (Sahi IDs ke saath) ---
+    // --- 1. SAARE ELEMENTS LAO (Correct IDs from Screenshot) ---
+    const welcomeSection = document.getElementById("welcomeSection"); // Sahi ID
+    const messageArea = document.getElementById("messageArea");
     const sidebar = document.getElementById("sidebar");
     const overlay = document.getElementById("overlay");
     const menuToggle = document.getElementById("menuToggle");
-    
-    // Aapke HTML ke hisab se sahi IDs
+
+    // Input Bar Elements
     const sendBtn = document.getElementById("sendBtn");
     const userInput = document.getElementById("userInput");
-    const chatArea = document.getElementById("messageArea"); // Ya 'message-area' check karein
-    const welcomeScreen = document.getElementById("welcomeScreen"); // Ya 'welcome-section'
+    const plusBtn = document.getElementById("plusBtn");   // Sahi ID
+    const webToggle = document.getElementById("webToggle"); // Sahi ID
     
-    // Buttons (Ab sahi IDs match kar rahe hain)
-    const uploadBtn = document.getElementById("plusBtn"); // HTML me id="plusBtn" hai
-    const webBtn = document.getElementById("webToggle");  // HTML me id="webToggle" hai
-    
-    // Ye humne Step 1 me jode hain
+    // Hidden & Popups
+    const plusMenu = document.getElementById("plusMenu");
     const fileInput = document.getElementById("fileInput");
     const inputContextArea = document.getElementById("inputContextArea");
 
@@ -307,7 +306,7 @@ body {
     let isWebSearch = false;
     let selectedFile = null;
 
-    // --- 3. MENU / SIDEBAR ---
+    // --- 3. MENU / SIDEBAR TOGGLE ---
     function toggleMenu() {
         if(sidebar) sidebar.classList.toggle("active");
         if(overlay) overlay.classList.toggle("active");
@@ -315,16 +314,85 @@ body {
     if(menuToggle) menuToggle.addEventListener("click", toggleMenu);
     if(overlay) overlay.addEventListener("click", toggleMenu);
 
-    // --- 4. WELCOME SCREEN FEATURES ---
+
+    // --- 4. PLUS MENU LOGIC (Upload Button) ---
+    
+    // A. Plus Button dabane par Menu khulega
+    if(plusBtn && plusMenu) {
+        plusBtn.addEventListener("click", (e) => {
+            e.stopPropagation(); // Click failne se roko
+            plusMenu.classList.toggle("active"); // Show/Hide
+        });
+    }
+
+    // B. Kahin aur click karne par Menu band ho jaye
+    document.addEventListener("click", (e) => {
+        if(plusMenu && !plusBtn.contains(e.target) && !plusMenu.contains(e.target)) {
+            plusMenu.classList.remove("active");
+        }
+    });
+
+    // C. Gallery Option pe click (Menu ke andar)
+    // Hum text se check karenge ki user ne 'Gallery' par click kiya ya nahi
+    if(plusMenu) {
+        plusMenu.querySelectorAll(".menu-item").forEach(item => {
+            item.addEventListener("click", () => {
+                if (item.innerText.includes("Gallery")) {
+                    fileInput.click(); // File Manager kholo
+                } 
+                else if (item.innerText.includes("Take Photo")) {
+                    fileInput.click(); // Camera/File (Mobile default)
+                }
+                else {
+                    addMessage("AI", "Ye feature jald aa raha hai! 🛠️");
+                }
+                plusMenu.classList.remove("active"); // Menu band karo
+            });
+        });
+    }
+
+    // --- 5. FILE SELECTED LOGIC ---
+    if(fileInput) {
+        fileInput.addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if(!file) return;
+            selectedFile = file;
+            
+            // Preview Dikhao (Typing bar ke upar)
+            inputContextArea.style.display = "block";
+            inputContextArea.innerHTML = `
+                <div style="background: #333; padding: 5px 10px; border-radius: 10px; display: inline-flex; align-items: center; gap: 10px;">
+                    <span style="color:white; font-size:12px;">🖼️ Photo Selected</span>
+                    <span onclick="clearContext()" style="color: #ff4d4d; cursor: pointer; font-weight:bold;">✕</span>
+                </div>`;
+            userInput.focus();
+        });
+    }
+
+    // --- 6. WEB SEARCH TOGGLE ---
+    if(webToggle) {
+        webToggle.addEventListener("click", () => {
+            isWebSearch = !isWebSearch;
+            // Icon ka color badlo (Blue = ON, Grey = OFF)
+            webToggle.style.color = isWebSearch ? "#4facfe" : "#999"; 
+            
+            // Chat me mat likho, bas UI change karo
+            // Agar user ko batana hi hai, toh toast notification dikha sakte hain (Optional)
+        });
+    }
+
+    // --- 7. WELCOME SCREEN BUTTONS ---
+    // (HTML me onclick="handleFeature(...)" hona chahiye)
     window.handleFeature = function(type) {
-        if(welcomeScreen) welcomeScreen.style.display = "none";
+        // Welcome screen hatao
+        if(welcomeSection) welcomeSection.style.display = "none";
         
         if (type === 'image') {
             activateImageMode();
-            addMessage("AI", "🎨 **Image Mode On!**<br>Prompt likho...");
+            addMessage("AI", "🎨 **Image Mode On!**<br>Prompt likho (e.g. 'A futuristic car')...");
         } 
         else if (type === 'location') {
-            addMessage("You", "Meri Location?");
+            addMessage("You", "Meri Location batao 📍");
              if (navigator.geolocation) {
                 navigator.geolocation.getCurrentPosition((position) => {
                     sendMessageToServer(`Location: ${position.coords.latitude}, ${position.coords.longitude}`, "chat");
@@ -332,98 +400,60 @@ body {
             }
         }
         else if (type === 'code') {
-            addMessage("AI", "Code bhejo Guru! 💻");
+            addMessage("AI", "Code bhejo Guru, main debug karta hoon! 💻");
         }
     }
 
-    // --- 5. BUTTONS LOGIC ---
-    
-    // A. Plus Button (Upload)
-    if(uploadBtn) {
-        uploadBtn.addEventListener("click", () => {
-            // Agar fileInput nahi mila to error mat do
-            if(fileInput) fileInput.click();
-        });
-    }
-
-    // File Select Hone Par
-    if(fileInput) {
-        fileInput.addEventListener("change", (e) => {
-            const file = e.target.files[0];
-            if(!file) return;
-            selectedFile = file;
-            
-            // Preview Dikhao
-            if(inputContextArea) {
-                inputContextArea.style.display = "block";
-                inputContextArea.innerHTML = `
-                    <div style="background: #222; padding: 8px; border-radius: 10px; border: 1px solid #444;">
-                        <span style="color:white; font-size:12px;">🖼️ Image Selected</span>
-                        <span onclick="clearContext()" style="color: #ff4d4d; cursor: pointer; margin-left: 10px; font-weight:bold;">✕</span>
-                    </div>`;
-            }
-        });
-    }
-
-    // B. Globe Button (Web Search)
-    if(webBtn) {
-        webBtn.addEventListener("click", () => {
-            isWebSearch = !isWebSearch;
-            // Web Search ka color badlo
-            webBtn.style.color = isWebSearch ? "#4facfe" : "#999"; 
-            addMessage("AI", isWebSearch ? "🌐 Web Search: **ON**" : "🌐 Web Search: **OFF**");
-        });
-    }
-
-    // C. Image Mode Logic
+    // --- 8. IMAGE MODE & CLEAR ---
     function activateImageMode() {
         isImageMode = true;
-        if(inputContextArea) {
-            inputContextArea.style.display = "block";
-            inputContextArea.innerHTML = `
-                <div style="background: #cce5ff; color: #004085; padding: 5px 10px; border-radius: 15px; font-size: 13px;">
-                    ✨ Image Gen Mode <span onclick="clearContext()" style="cursor: pointer; margin-left: 5px; color:red;">✖</span>
-                </div>`;
-        }
+        inputContextArea.style.display = "block";
+        inputContextArea.innerHTML = `
+            <div style="background: #cce5ff; color: #004085; padding: 5px 10px; border-radius: 15px; font-size: 13px;">
+                ✨ Image Gen Mode <span onclick="clearContext()" style="cursor: pointer; margin-left: 5px; color:red;">✕</span>
+            </div>`;
     }
 
-    // D. Clear Context
     window.clearContext = function() {
         isImageMode = false;
         selectedFile = null;
-        if(inputContextArea) {
-            inputContextArea.style.display = "none";
-            inputContextArea.innerHTML = "";
-        }
-        if(fileInput) fileInput.value = "";
+        inputContextArea.style.display = "none";
+        inputContextArea.innerHTML = "";
+        fileInput.value = "";
     }
 
-    // --- 6. SEND MESSAGE ---
+    // --- 9. SEND MESSAGE (Main Logic) ---
     async function sendMessage() {
         const msg = userInput.value.trim();
         if (!msg && !selectedFile) return;
 
-        if(welcomeScreen) welcomeScreen.style.display = "none";
+        // WELCOME SCREEN HATAO (Zaruri)
+        if(welcomeSection) welcomeSection.style.display = "none";
 
-        // User Message
+        // User Message UI
         if (selectedFile) addMessage("You", `[🖼️ Photo] ${msg}`);
         else addMessage("You", msg);
 
+        // Reset Input
         userInput.value = "";
-        
-        // Determine Type
+        sendBtn.classList.remove("active");
+
+        // Logic: Chat ya Image?
         let type = "chat";
         if (isImageMode && !selectedFile) {
             type = "image_gen";
-            addMessage("AI", "🎨 Painting bana raha hoon...");
+            addMessage("AI", "🎨 Painting bana raha hoon... (Wait karo)");
         }
 
+        // Server Call
         await sendMessageToServer(msg, type);
 
+        // Kaam khatam hone par mode reset
         if(isImageMode) clearContext();
+        if(selectedFile) clearContext();
     }
 
-    // --- 7. SERVER CALL ---
+    // --- 10. SERVER CALL ---
     async function sendMessageToServer(msg, type) {
         try {
             const res = await fetch("/api/chat", {
@@ -445,19 +475,43 @@ body {
         }
     }
 
-    // --- 8. HELPER ---
+    // --- 11. HELPER: ADD MESSAGE ---
     function addMessage(sender, text) {
         const div = document.createElement("div");
-        div.className = sender === "You" ? "user-message" : "ai-message"; // Ensure classes match CSS
-        // Agar CSS me class alag hai to yahan adjust karein (e.g., 'message right', 'message left')
-        div.innerHTML = text.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
-        chatArea.appendChild(div);
-        chatArea.scrollTop = chatArea.scrollHeight;
+        // Aapke CSS classes check kiye hain screenshot se
+        // User ke liye shayad aapne 'message right' ya 'user-message' use kiya ho
+        // Main standard classes laga raha hu, agar CSS me alag ho to bata dena
+        div.className = sender === "You" ? "user-message" : "ai-message"; 
+        
+        // Quick Fix for Styling (Agar CSS class match na ho to)
+        if(sender === "You") {
+            div.style.alignSelf = "flex-end";
+            div.style.background = "#333";
+            div.style.padding = "10px";
+            div.style.borderRadius = "10px";
+            div.style.marginBottom = "5px";
+            div.style.maxWidth = "80%";
+        } else {
+            div.style.alignSelf = "flex-start";
+            div.style.padding = "5px";
+            div.style.marginBottom = "10px";
+        }
+
+        div.innerHTML = text.replace(/\n/g, '<br>');
+        messageArea.appendChild(div);
+        messageArea.scrollTop = messageArea.scrollHeight;
     }
 
-    // Listeners
+    // --- 12. EVENT LISTENERS ---
     if(sendBtn) sendBtn.addEventListener("click", sendMessage);
+    
+    // Enter key dabane par bhejo
     if(userInput) {
+        userInput.addEventListener("input", function() {
+             if (this.value.trim().length > 0) sendBtn.classList.add("active");
+             else sendBtn.classList.remove("active");
+        });
+        
         userInput.addEventListener("keypress", (e) => {
             if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
@@ -467,5 +521,4 @@ body {
     }
 </script>
 
-      
- 
+            
