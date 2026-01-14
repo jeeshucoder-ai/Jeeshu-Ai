@@ -202,7 +202,52 @@ body {
         .social-btn { width: 100%; padding: 13px; margin-bottom: 12px; border-radius: 50px; border: 1px solid #333; background: #222; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; }
 
         @keyframes popUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    </style>
+
+/* --- CHAT BUBBLES FIX --- */
+
+/* User Message (Right side, Grey Bubble) */
+.user-message {
+    align-self: flex-end;
+    background-color: #282a2c; /* Grey Bubble */
+    color: #ffffff;
+    padding: 10px 15px;
+    border-radius: 20px 20px 4px 20px; /* Bubble Shape */
+    max-width: 80%;
+    margin-bottom: 10px;
+    word-wrap: break-word;
+    font-size: 16px;
+    border: 1px solid #333;
+}
+
+/* AI Message (Left side, Clean Text) */
+.ai-message {
+    align-self: flex-start;
+    background-color: transparent;
+    color: #e3e3e3;
+    padding: 5px;
+    margin-bottom: 10px;
+    max-width: 95%;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+/* Images in Chat */
+.ai-message img {
+    max-width: 100%;
+    border-radius: 12px;
+    margin-top: 8px;
+    border: 1px solid #444;
+}
+
+/* Error Message (Red) */
+.error-msg {
+    color: #ff6b6b;
+    font-size: 14px;
+    background: rgba(255, 0, 0, 0.1);
+    padding: 5px 10px;
+    border-radius: 10px;
+}      
+ </style>
 </head>
 <body>
 
