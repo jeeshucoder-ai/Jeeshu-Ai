@@ -4,7 +4,7 @@ export default async function handler(req, res) {
   const { message, type } = req.body;
 
   try {
-    // --- 1. IMAGE GENERATION (Hugging Face) ---
+    // --- 1. IMAGE GENERATION (Ye waisa hi rahega) ---
     if (type === "image_gen") {
       const hfKey = process.env.HF_API_KEY;
       if (!hfKey) return res.json({ reply: "HF Key missing hai!" });
@@ -28,7 +28,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // --- 2. NORMAL CHAT (NEWEST GEMINI 2.0) ✅ ---
+    // --- 2. NORMAL CHAT (OLD STABLE MODEL) ✅ ---
     const keys = [
       process.env.GEMINI_KEY_3,
       process.env.GEMINI_KEY_2,
@@ -37,9 +37,9 @@ export default async function handler(req, res) {
 
     const randomKey = keys[Math.floor(Math.random() * keys.length)];
 
-    // 👇 YAHAN CHANGE KIYA HAI: 'gemini-pro' ki jagah 'gemini-2.0-flash'
+    // 👇 YAHAN DEKHO: 'v1beta' hata kar 'v1' kar diya hai taaki error na aaye
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${randomKey}`,
+      `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${randomKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -52,25 +52,8 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (data.error) {
-      // Agar 2.0 fail ho, to fallback 'gemini-1.5-flash' try karein (Backup Plan)
-      console.log("Retrying with 1.5-flash...");
-      const retryResponse = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${randomKey}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: [{ parts: [{ text: "You are Jeeshu AI. Keep it short. User: " + message }] }]
-          }),
-        }
-      );
-      const retryData = await retryResponse.json();
-      
-      if (retryData.error) {
-         return res.json({ reply: "Error: " + retryData.error.message });
-      }
-      const retryReply = retryData.candidates?.[0]?.content?.parts?.[0]?.text || "Samajh nahi aaya...";
-      return res.status(200).json({ reply: retryReply });
+      console.error("Gemini Error:", data.error);
+      return res.json({ reply: "Error: " + data.error.message });
     }
 
     const aiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Samajh nahi aaya...";
