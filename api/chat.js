@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   const geminiKey = process.env.GEMINI_API_KEY;
   const hfKey = process.env.HF_API_KEY;
 
-  if (!geminiKey) return res.json({ reply: "Guru, GEMINI_API_KEY missing hai settings me!" });
+  if (!geminiKey) return res.json({ reply: "Guru, GEMINI_API_KEY missing hai!" });
 
   try {
     // --- 1. IMAGE GENERATION (Hugging Face) ---
@@ -33,58 +33,46 @@ export default async function handler(req, res) {
       });
     }
 
-    // --- 2. SMART CHAT (AUTO-RETRY SYSTEM) 🧠 ---
+    // --- 2. CHAT (STABLE V1 URL) 🧠 ---
+    // Hum 'beta' hata kar seedha 'v1' use kar rahe hain
     
-    // Ye list hai models ki. Ek fail hoga to agla try karega.
-    const modelsToTry = [
-      "gemini-1.5-flash",       // Sabse Naya
-      "gemini-1.5-flash-latest", // Alternate Name
-      "gemini-pro",             // Old Faithful (Ye kabhi fail nahi hota)
-      "gemini-1.0-pro"          // Backup
-    ];
-
-    let aiReply = "";
-    let lastError = "";
-
-    // Loop chalayenge: Ek-ek karke model try karo
-    for (const modelName of modelsToTry) {
-      console.log(`Trying model: ${modelName}...`);
-      try {
-        const response = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${geminiKey}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              contents: [{ parts: [{ text: "You are Jeeshu AI. Keep it short & funny (Hinglish). User: " + message }] }]
-            }),
-          }
-        );
-
-        const data = await response.json();
-
-        // Agar is model me error aaya, to agle model par jao (continue)
-        if (data.error) {
-          console.log(`Model ${modelName} failed:`, data.error.message);
-          lastError = data.error.message;
-          continue; 
-        }
-
-        // Agar sahi jawab mila, to loop roko aur jawab le lo
-        if (data.candidates && data.candidates[0].content) {
-          aiReply = data.candidates[0].content.parts[0].text;
-          break; // Success! Loop khatam.
-        }
-      } catch (err) {
-        console.log(`Network Error on ${modelName}`);
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: "You are Jeeshu AI. Keep it short & funny (Hinglish). User: " + message }] }]
+        }),
       }
+    );
+
+    const data = await response.json();
+
+    // Agar 1.5 Flash fail ho, to purana 'gemini-pro' try karo (Backup)
+    if (data.error) {
+      console.log("1.5 Flash V1 failed, trying Gemini Pro V1...");
+      const retryResponse = await fetch(
+        `https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=${geminiKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: "You are Jeeshu AI. Keep it short. User: " + message }] }]
+          }),
+        }
+      );
+      const retryData = await retryResponse.json();
+      
+      if (retryData.error) {
+         return res.json({ reply: `Guru, ab bhi error hai: ${retryData.error.message}` });
+      }
+      
+      const retryReply = retryData.candidates?.[0]?.content?.parts?.[0]?.text;
+      return res.status(200).json({ reply: retryReply });
     }
 
-    // Agar saare models fail ho gaye tab error dikhao
-    if (!aiReply) {
-      return res.json({ reply: `Guru, Google ke saare models naaraaz hain. Last Error: ${lastError}` });
-    }
-
+    const aiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Main samajh nahi paya...";
     return res.status(200).json({ reply: aiReply });
 
   } catch (err) {
