@@ -5,6 +5,13 @@ export default async function handler(req, res) {
   const geminiKey = process.env.GEMINI_API_KEY;
   const hfKey = process.env.HF_API_KEY;
 
+  // 👇 AAJ KI TAAREEKH AUR TIME NIKALO (India Time)
+  const today = new Date().toLocaleString("en-IN", { 
+    timeZone: "Asia/Kolkata", 
+    dateStyle: "full", 
+    timeStyle: "short" 
+  });
+
   try {
     // --- 1. IMAGE GENERATION (Hugging Face) ---
     if (type === "image_gen") {
@@ -23,34 +30,30 @@ export default async function handler(req, res) {
       return res.status(200).json({ reply: "Ye lijiye tasveer! 🖼️", image: `data:image/jpeg;base64,${base64Image}` });
     }
 
-    // --- 2. CHAT SYSTEM (AUTO-DETECT + BACKUP) 🧠 ---
+    // --- 2. CHAT SYSTEM (WITH DATE & TIME) 📅 ---
+
+    // Jeeshu ke liye System Prompt (Isme Date jod di hai)
+    const systemPrompt = `Current Date & Time in India is: ${today}. You are Jeeshu AI. Keep answers short, helpful & funny (Hinglish).`;
 
     // STEP A: Try Gemini Auto-Detect
     if (geminiKey) {
       try {
-        // 1. Pehle pucho kaunse models hain (Auto-Scan)
+        // Auto-Scan Models
         const listReq = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${geminiKey}`);
         const listData = await listReq.json();
-
-        let targetModel = "models/gemini-1.5-flash"; // Default
-
-        // 2. List me se sabse naya 'generateContent' wala model dhundo
+        let targetModel = "models/gemini-1.5-flash"; 
         if (listData.models) {
-          const validModel = listData.models.find(m => 
-            m.name.includes("gemini") && 
-            m.supportedGenerationMethods.includes("generateContent")
-          );
+          const validModel = listData.models.find(m => m.name.includes("gemini") && m.supportedGenerationMethods.includes("generateContent"));
           if (validModel) targetModel = validModel.name;
         }
 
-        // 3. Us Model se baat karo
         const response = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/${targetModel}:generateContent?key=${geminiKey}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              contents: [{ parts: [{ text: "You are Jeeshu AI. Keep answers short & funny (Hinglish). User: " + message }] }]
+              contents: [{ parts: [{ text: `${systemPrompt} User says: ${message}` }] }]
             })
           }
         );
@@ -59,15 +62,10 @@ export default async function handler(req, res) {
         if (!data.error && data.candidates) {
           return res.status(200).json({ reply: data.candidates[0].content.parts[0].text });
         }
-        console.log("Gemini Failed, switching to Backup...", data.error);
-        
-      } catch (geminiError) {
-        console.log("Gemini Network Error", geminiError);
-      }
+      } catch (e) { console.log("Gemini Error"); }
     }
 
-    // STEP B: FAIL-SAFE BACKUP (Hugging Face - Phi-3) 🛡️
-    // Agar Gemini fail hua, to ye chalega. Error nahi dikhega.
+    // STEP B: FAIL-SAFE BACKUP (Hugging Face) 🛡️
     if (hfKey) {
        const hfResponse = await fetch(
         "https://api-inference.huggingface.co/models/microsoft/Phi-3-mini-4k-instruct/v1/chat/completions",
@@ -76,19 +74,22 @@ export default async function handler(req, res) {
           headers: { Authorization: `Bearer ${hfKey}`, "Content-Type": "application/json" },
           body: JSON.stringify({
             model: "microsoft/Phi-3-mini-4k-instruct",
-            messages: [{ role: "user", content: message }],
+            messages: [
+                { role: "system", content: systemPrompt }, // Yahan bhi date bhej di
+                { role: "user", content: message }
+            ],
             max_tokens: 500
           }),
         }
       );
       const hfData = await hfResponse.json();
-      const reply = hfData.choices?.[0]?.message?.content || "Server thoda busy hai, par main sun raha hoon!";
+      const reply = hfData.choices?.[0]?.message?.content || "Server busy hai!";
       return res.status(200).json({ reply: reply });
     }
 
-    return res.status(200).json({ reply: "Guru, dono keys check karo settings me!" });
+    return res.status(200).json({ reply: "Keys check karo Guru!" });
 
   } catch (err) {
-    return res.status(500).json({ reply: "Server Error aa gaya Guru!" });
+    return res.status(500).json({ reply: "Server Error!" });
   }
 }
