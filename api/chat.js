@@ -1,12 +1,10 @@
 export default async function handler(req, res) {
-  // Sirf POST request allow karo
   if (req.method !== "POST") return res.status(405).json({ reply: "Only POST allowed" });
 
   const { message, type } = req.body;
 
   try {
     // --- 1. IMAGE GENERATION (Hugging Face) ---
-    // (Ye waisa hi rahega jaisa tha)
     if (type === "image_gen") {
       const hfKey = process.env.HF_API_KEY;
       if (!hfKey) return res.json({ reply: "HF Key missing hai!" });
@@ -30,7 +28,7 @@ export default async function handler(req, res) {
       });
     }
 
-    // --- 2. NORMAL CHAT (BACK TO GEMINI PRO) ✅ ---
+    // --- 2. NORMAL CHAT (NEWEST GEMINI 2.0) ✅ ---
     const keys = [
       process.env.GEMINI_KEY_3,
       process.env.GEMINI_KEY_2,
@@ -39,9 +37,9 @@ export default async function handler(req, res) {
 
     const randomKey = keys[Math.floor(Math.random() * keys.length)];
 
-    // 👇 YAHAN CHANGE KIYA HAI: 'gemini-1.5-flash' hatakar 'gemini-pro' laga diya
+    // 👇 YAHAN CHANGE KIYA HAI: 'gemini-pro' ki jagah 'gemini-2.0-flash'
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${randomKey}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${randomKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -53,18 +51,32 @@ export default async function handler(req, res) {
 
     const data = await response.json();
 
-    // Agar error aaye to check karo
     if (data.error) {
-      console.error("Gemini Error:", data.error);
-      return res.json({ reply: "Guru, API Key me kuch dikkat hai. Error: " + data.error.message });
+      // Agar 2.0 fail ho, to fallback 'gemini-1.5-flash' try karein (Backup Plan)
+      console.log("Retrying with 1.5-flash...");
+      const retryResponse = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${randomKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: "You are Jeeshu AI. Keep it short. User: " + message }] }]
+          }),
+        }
+      );
+      const retryData = await retryResponse.json();
+      
+      if (retryData.error) {
+         return res.json({ reply: "Error: " + retryData.error.message });
+      }
+      const retryReply = retryData.candidates?.[0]?.content?.parts?.[0]?.text || "Samajh nahi aaya...";
+      return res.status(200).json({ reply: retryReply });
     }
 
-    const aiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Main samajh nahi paya...";
-    
+    const aiReply = data.candidates?.[0]?.content?.parts?.[0]?.text || "Samajh nahi aaya...";
     return res.status(200).json({ reply: aiReply });
 
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ reply: "Server Error aa gaya Guru!" });
+    return res.status(500).json({ reply: "Server Error!" });
   }
 }
