@@ -3,11 +3,10 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ reply: "Only POST allowed" });
 
   const { message, type } = req.body;
-  const hfKey = process.env.HF_API_KEY;
 
-  if (!hfKey) {
-    return res.status(500).json({ reply: "Guru, Vercel me HF_API_KEY missing hai!" });
-  }
+  // 👇 GURU, YAHAN MAINE AAPKI KEY SEEDHA LIKH DI HAI (Hardcoded)
+  // Agar ye key galat nikli, to HuggingFace se nayi key copy karke yahan quotes "" ke andar daal dena.
+  const hfKey = "Hf_BFkIFYXNOOngArmfHcZLJHGmPDhUrrvWrm"; 
 
   try {
     // ---------------------------------------------------------
@@ -24,8 +23,7 @@ export default async function handler(req, res) {
       );
 
       if (!response.ok) {
-        // Agar HF Image server busy ho
-        return res.json({ reply: "Guru, Drawing room busy hai. 10 sec baad try karna! 🎨" });
+        return res.json({ reply: "Guru, Image Server busy hai ya Key galat hai. Check karo!" });
       }
 
       const imageBuffer = await response.arrayBuffer();
@@ -38,10 +36,9 @@ export default async function handler(req, res) {
 
     // ---------------------------------------------------------
     // SCENARIO 2: CHAT (Via Hugging Face - Qwen Model) 🧠
-    // (Ab Gemini ki zarurat nahi, ye HF se chalega)
     // ---------------------------------------------------------
     
-    // Hum 'Qwen/Qwen2.5-72B-Instruct' use karenge jo DeepSeek level ka hai
+    // Qwen 2.5 Model (Smart & Fast)
     const response = await fetch(
       "https://api-inference.huggingface.co/models/Qwen/Qwen2.5-72B-Instruct/v1/chat/completions",
       {
@@ -64,8 +61,8 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (data.error) {
-       // Agar Qwen busy hai, to chota model try karo (Backup)
-       console.log("Switching to Backup Model...");
+       console.log("Error:", data.error);
+       // Backup Model (Phi-3)
        const backupResponse = await fetch(
         "https://api-inference.huggingface.co/models/microsoft/Phi-3-mini-4k-instruct/v1/chat/completions",
         {
