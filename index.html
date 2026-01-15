@@ -246,7 +246,28 @@ body {
     background: rgba(255, 0, 0, 0.1);
     padding: 5px 10px;
     border-radius: 10px;
-}      
+}    
+/* --- FORCE CHAT BUBBLE FIX --- */
+.user-message {
+    align-self: flex-end !important;
+    background-color: #282a2c !important; /* Grey Background Force */
+    color: #ffffff !important;
+    padding: 12px 18px !important;
+    border-radius: 20px 20px 4px 20px !important;
+    margin-bottom: 10px !important;
+    max-width: 80% !important;
+    display: inline-block !important;
+    border: 1px solid #444 !important;
+}
+
+.ai-message {
+    align-self: flex-start !important;
+    background: transparent !important;
+    color: #e3e3e3 !important;
+    padding: 5px !important;
+    margin-bottom: 10px !important;
+    max-width: 95% !important;
+}        
  </style>
 </head>
 <body>
