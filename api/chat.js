@@ -1,29 +1,32 @@
 export default async function handler(req, res) {
-    // 1. Sirf POST requests allow karein
+    // 1. Sirf POST allow karein
     if (req.method !== "POST") {
         return res.status(405).json({ reply: "Sirf POST allowed hai Guru!" });
     }
 
     const { message } = req.body;
-    const geminiKey = process.env.GEMINI_API_KEY; // Ya GOOGLE_API_KEY agar wo use kiya hai
+    
+    // Key uthayein (Jo bhi naam aapne set kiya ho)
+    const geminiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
 
     if (!geminiKey) {
-        return res.status(500).json({ reply: "Guru, Vercel Settings me Key nahi mili!" });
+        return res.status(500).json({ reply: "Key nahi mili Guru! Vercel Settings check karo." });
     }
 
-    const today = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "full", timeStyle: "short" });
+    const today = new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" });
 
     try {
-        // --- CHANGE: Using 'gemini-pro' (Most Stable Model) ---
+        // --- CHANGE: URL me 'v1beta' hata kar 'v1' kar diya ---
+        // Aur model 'gemini-1.5-flash' use kar rahe hain
         const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${geminiKey}`,
+            `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${geminiKey}`,
             {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     contents: [{
                         parts: [{
-                            text: `Current Date: ${today}. You are Jeeshu AI, a funny, desi and helpful assistant. Reply in Hinglish. User said: ${message}`
+                            text: `Current Date: ${today}. You are Jeeshu AI, a helpful and funny assistant. Reply in Hinglish. User said: ${message}`
                         }]
                     }]
                 }),
@@ -32,18 +35,17 @@ export default async function handler(req, res) {
 
         const data = await response.json();
 
-        // Error Check
+        // Agar ab bhi Google Error de
         if (data.error) {
-            console.error("Gemini Error:", data.error.message);
-            return res.status(500).json({ reply: `Google Error: ${data.error.message}` });
+            console.error("Google Error:", data.error);
+            return res.status(500).json({ reply: `Error: ${data.error.message}` });
         }
 
-        // Success
+        // Success!
         const botReply = data.candidates[0].content.parts[0].text;
         return res.status(200).json({ reply: botReply });
 
     } catch (error) {
-        console.error("Server Error:", error);
         return res.status(500).json({ reply: `Server Crash: ${error.message}` });
     }
 }
